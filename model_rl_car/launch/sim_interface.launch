@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Launch the simulator  -->
+  <include file="$(find model_rl_car)/launch/simulator.launch"/>
+
+  <node pkg="model_rl_car" name="sim_interface_node" type="simulator_interface.py" output="screen"/>
+  
+</launch>
