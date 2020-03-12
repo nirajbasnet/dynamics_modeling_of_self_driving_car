@@ -24,4 +24,33 @@ class Conv_Stack(nn.Module):
 
         return input #Output dimension is 144 X 144 X 64
 
+# space_to_depth operation outputs a copy of the input tensor where values from the height and width dimensions are moved to the depth dimension.
+# It transfers an input size of (None, 38,38,64) to (None, 19,19, 256).
+#referred from https://discuss.pytorch.org/t/is-there-any-layer-like-tensorflows-space-to-depth-function/3487/15
+class DepthToSpace(nn.Module):
+
+    def __init__(self, block_size):
+        super().__init__()
+        self.blocksize = block_size
+
+    def forward(self, input): # input should be 4-dimensional of the formal (None, Channel-Depth, Height,Width)
+        no_dimen, channel_depth, height, width = input.size()
+        input = input.view(no_dimen, self.blocksize, self.blocksize, channel_depth // (self.blocksize ** 2), height, width)
+        input = input.permute(no_dimen, channel_depth//(self.blocksize^2), height, self.blocksize, width, self.blocksize).contiguous()
+        input = input.view(no_dimen, channel_depth // (self.blocksize ** 2), height * self.blocksize, width * self.blocksize)
+        return input
+
+
+class SpaceToDepth(nn.Module):
+
+    def __init__(self, block_size):
+        super().__init__()
+        self.block_size = block_size
+
+    def forward(self, x):
+        no_dimen, channel_depth, height, width = x.size()
+        x = x.view(no_dimen, channel_depth, height // self.block_size, self.block_size, width // self.block_size, self.block_size)
+        x = x.permute(no_dimen, self.block_size, self.block_size, channel_depth, height//self.block_size, width//self.block_size).contiguous()
+        x = x.view(no_dimen, channel_depth * (self.block_size ** 2), height // self.block_size, width // self.block_size)
+        return x
 
