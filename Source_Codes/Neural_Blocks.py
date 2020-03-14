@@ -1,7 +1,8 @@
 # Created by Aashish Adhikari at 5:23 PM 3/11/2020
 #The modules here are inspired from the paper "Learning and Querying Fast Generative Models for Reinforcement Learning"
 
-import torch.nn as nn, time
+import torch.nn as nn, time, torch
+import numpy as np
 
 class Conv_Stack(nn.Module):
 
@@ -30,7 +31,7 @@ class Conv_Stack(nn.Module):
 class DepthToSpace(nn.Module):
 
     def __init__(self, block_size):
-        super().__init__()
+        super(DepthToSpace,self).__init__()
         self.blocksize = block_size
 
     def forward(self, input): # input should be 4-dimensional of the formal (None, Channel-Depth, Height,Width)
@@ -44,20 +45,20 @@ class DepthToSpace(nn.Module):
 class SpaceToDepth(nn.Module):
 
     def __init__(self, block_size):
-        super().__init__()
+        super(SpaceToDepth,self).__init__()
         self.block_size = block_size
 
-    def forward(self, x):
-        no_dimen, channel_depth, height, width = x.size()
-        x = x.view(no_dimen, channel_depth, height // self.block_size, self.block_size, width // self.block_size, self.block_size)
-        x = x.permute(no_dimen, self.block_size, self.block_size, channel_depth, height//self.block_size, width//self.block_size).contiguous()
-        x = x.view(no_dimen, channel_depth * (self.block_size ** 2), height // self.block_size, width // self.block_size)
-        return x
+    def forward(self, input):
+        no_dimen, channel_depth, height, width = input.size()
+        input = input.view(no_dimen, channel_depth, height // self.block_size, self.block_size, width // self.block_size, self.block_size)
+        input = input.permute(no_dimen, self.block_size, self.block_size, channel_depth, height//self.block_size, width//self.block_size).contiguous()
+        input = input.view(no_dimen, channel_depth * (self.block_size ** 2), height // self.block_size, width // self.block_size)
+        return input
 
 class Observation_Encoder(nn.Module):
 
     def __init__(self):
-        super().__init__()
+        super(Observation_Encoder, self).__init__()
         self.space_to_depth_1 = SpaceToDepth(4)
         self.conv_stack_1 = Conv_Stack(k1=3, c1=16, k2=5, c2=16, k3=3, c3=64, s1=1, s2=2, s3=1, p1=0,p2=2,p3=0)
         self.space_to_depth_2 = SpaceToDepth(2)
@@ -74,3 +75,38 @@ class Observation_Encoder(nn.Module):
         input = self.leaky_relu(input)
 
         return input
+
+class Residual_Conv_Stack(nn.Module):
+
+    def __init__(self, in_dimen = 1, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=0, p2=0, p3=0):
+        super(Residual_Conv_Stack, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=in_dimen, out_channels= c1, kernel_size=k1, stride= s1, padding= p1)
+        self.conv2 = nn.Conv2d(in_channels=c1, out_channels= c2, kernel_size=k2, stride= s2, padding= p2)
+        self.conv3 = nn.Conv2d(in_channels=c2, out_channels= c3, kernel_size=k3, stride= s3, padding= p3)
+
+    def forward(self, input):
+        input_ = self.conv1(input)
+        input_ = nn.LeakyReLU(input_)
+        input_ = self.conv2(input_)
+        input_ = nn.LeakyReLU(input_)
+        input_ = self.conv3(input_)
+        input_ = input + input_
+
+        return input_
+
+
+class Pool_and_Inject(nn.Module):
+
+    def __init__(self):
+        super(Pool_and_Inject, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=in_dimen, out_channels= c1, kernel_size=k1, stride= s1, padding= p1)
+        self.maxpool = nn.MaxPool2d(kernel_size=5) #kernel size not specified in the paper, so using 5
+
+    def forward(self, input):
+        input_ = self.conv1(input)
+        input_ = self.maxpool(input_)
+
+        input_ = np.tile(input_,())
+
+        #Check if the tiling worked or not
+        assert input.shape[0] = input_.shape[0]
