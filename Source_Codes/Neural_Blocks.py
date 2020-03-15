@@ -16,7 +16,6 @@ class Conv_Stack(nn.Module):
         self.conv3 = nn.Conv2d(in_channels=c2, out_channels=c3, kernel_size=k3, stride=s3, padding=p3) #op dimension not matched with anything for now
 
     def forward(self, input):
-
         input = self.conv1(input)
         input = self.leakyrelu_1(input)
         input_ = self.conv2(input)
@@ -96,6 +95,20 @@ class Residual_Conv_Stack(nn.Module):
         return input_
 
 
+class Initial_State_Module():
+    def __init__(self): #Each embedded observation is #1, 64, 12, 12 dimensions
+        super(Initial_State_Module, self).__init__()
+        self.conv_stack = Conv_Stack(in_1=64,k1=1,c1=64,in_2=64,k2=3,c2=64,k3=3,c3=64,p1=0,p2=1,p3=0)
+
+    def forward(self, obs_t_minus_2, obs_t_minus_1, obs_t_0):
+        input = torch.cat((obs_t_minus_2,obs_t_minus_1))
+        input = torch.cat((input,obs_t_0))
+        input = self.conv_stack(input) #passing shape 3,64,12,12
+        return input #returns the first state, s0 with dimensions
+
+
+
+
 # class Pool_and_Inject(nn.Module):
 #
 #     def __init__(self):
@@ -115,12 +128,12 @@ class Residual_Conv_Stack(nn.Module):
 
 if __name__ == "__main__":
 
-    sample_input = np.random.randn(1,1,150,150)
-    a= torch.FloatTensor(sample_input)
-    encoder = Observation_Encoder()
-    o = encoder.forward(a)
-    print(o.shape)
+    sample_input = torch.Tensor(np.random.randn(1, 64, 12, 12))
+    sample_input2 = torch.Tensor(np.random.randn(1, 64, 12, 12))
+    sample_input3 = torch.Tensor(np.random.randn(1, 64, 12, 12))
 
+    initial_state_module = Initial_State_Module()
+    op = initial_state_module.forward(sample_input,sample_input2,sample_input3)
 
     '''
     The .view() operation gives you a new view on the tensor without copying any data.
