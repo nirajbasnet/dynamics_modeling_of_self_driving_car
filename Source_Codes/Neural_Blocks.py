@@ -78,20 +78,24 @@ class Observation_Encoder(nn.Module):
 
 class Residual_Conv_Stack(nn.Module):
 
-    def __init__(self, in_dimen = 1, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=0, p2=0, p3=0):
+    def __init__(self, in_channelss = 1, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=2, p3=1): #paddings to preserve the original H,W
         super(Residual_Conv_Stack, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=in_dimen, out_channels= c1, kernel_size=k1, stride= s1, padding= p1)
+        self.conv1 = nn.Conv2d(in_channels=in_channelss, out_channels= c1, kernel_size=k1, stride= s1, padding= p1)
+        self.leakyrelu_1 = nn.LeakyReLU()
         self.conv2 = nn.Conv2d(in_channels=c1, out_channels= c2, kernel_size=k2, stride= s2, padding= p2)
+        self.leakyrelu_2 = nn.LeakyReLU()
         self.conv3 = nn.Conv2d(in_channels=c2, out_channels= c3, kernel_size=k3, stride= s3, padding= p3)
-
-    def forward(self, input):
+        #Extra convolution added to make uniform dimension between input and input_ in forward()
+        self.conv4 = nn.Conv2d(in_channels=c3, out_channels= in_channelss, kernel_size=3, stride=1, padding=1)
+    def forward(self, input): #input shape: 1, 214, 10, 10
         input_ = self.conv1(input)
-        input_ = nn.LeakyReLU(input_)
+        input_ = self.leakyrelu_1(input_)
         input_ = self.conv2(input_)
-        input_ = nn.LeakyReLU(input_)
+        input_ = self.leakyrelu_2(input_)
         input_ = self.conv3(input_)
+        #input shape: [1, 214, 10, 10], input_ shape: 1, 64, 10, 10], To make uniform such that they can be added, pass input_ thru a convoulution
+        input_ = self.conv4(input_)
         input_ = input + input_
-
         return input_
 
 
@@ -100,40 +104,62 @@ class Initial_State_Module():
         super(Initial_State_Module, self).__init__()
         self.conv_stack = Conv_Stack(in_1=64,k1=1,c1=64,in_2=64,k2=3,c2=64,k3=3,c3=64,p1=0,p2=1,p3=0)
 
-    def forward(self, obs_t_minus_2, obs_t_minus_1, obs_t_0):
-        input = torch.cat((obs_t_minus_2,obs_t_minus_1))
-        input = torch.cat((input,obs_t_0))
-        input = self.conv_stack(input) #passing shape 3,64,12,12
-        return input #returns the first state, s0 with dimensions
+    def forward(self, obs_t_minus_2, obs_t_minus_1, obs_t_0):#Each embedding has a shape [1, 64, 12, 12] at first.
+        input = torch.cat((obs_t_minus_2,obs_t_minus_1),dim = 1)#Concatenating horizontally gives a shape [1, 64, 12, 24]
+
+        input = torch.cat((input,obs_t_0),dim = 1)#Again concatenating gives [1, 128, 12, 12]
+        input = self.conv_stack(input)
+        return input #returns the first state, s0 with dimensions 1, 192, 10, 10
+
+
+class Pool_and_Inject(nn.Module):
+
+    def __init__(self):
+        super(Pool_and_Inject, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=214, out_channels= 32, kernel_size=3, stride= 1, padding= 0)
+        self.maxpool = nn.MaxPool2d(kernel_size=3) #kernel size not specified in the paper, so using 3
+
+
+    def forward(self, input): #input shape: [1, 214, 10, 10]
+        input_ = self.conv1(input)
+        input_ = self.maxpool(input_) #input_ shape [1, 32, 2, 2]
+        input_to_concat = torch.repeat_interleave(input_,repeats = 5, dim = 2) #Tile operation
+        input_to_concat = torch.repeat_interleave(input_to_concat, repeats=5, dim=3)  # Tile operation
+        input_ = torch.cat((input,input_to_concat), dim=1)
+        return  input_ #returns [1, 246, 10, 10]
 
 
 
+class State_Transition_Module(nn.Module):
 
-# class Pool_and_Inject(nn.Module):
-#
-#     def __init__(self):
-#         super(Pool_and_Inject, self).__init__()
-#         self.conv1 = nn.Conv2d(in_channels=in_dimen, out_channels= c1, kernel_size=k1, stride= s1, padding= p1)
-#         self.maxpool = nn.MaxPool2d(kernel_size=5) #kernel size not specified in the paper, so using 5
-#
-#     def forward(self, input):
-#         input_ = self.conv1(input)
-#         input_ = self.maxpool(input_)
-#
-#         input_ = np.tile(input_,())
-#
-#         #Check if the tiling worked or not
-#         assert input.shape[0] = input_.shape[0]
-#
+    def __init__(self):
+        super(State_Transition_Module, self).__init__()
+        self.res_conv_1 = Residual_Conv_Stack(in_channelss= 214, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=2, p3=1)
+        self.leaky_relu = nn.LeakyReLU()
+        self.pool_and_inject = Pool_and_Inject()
+        self.res_conv_2 = Residual_Conv_Stack(in_channelss=246, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=2, p3=1)
+
+    def forward(self, last_state, reshaped_last_action):
+        action_to_concat = torch.repeat_interleave(reshaped_last_action,repeats = last_state.shape[2], dim = 2) #Tile operation
+        action_to_concat = torch.repeat_interleave(action_to_concat, repeats = last_state.shape[3], dim = 3)
+        input = torch.cat((last_state, action_to_concat),dim=1) #state shape: 1, 192, 10, 10, action shape: 1,22,10,10
+        input = self.res_conv_1(input) #input fed to resconv shape 1, 214, 10, 10
+        input = self.leaky_relu(input)
+        input = self.pool_and_inject(input)
+        input = self.res_conv_2(input) #input fed to resconv shape 1, 246, 10, 10
+        return input
+
+
+
 
 if __name__ == "__main__":
 
-    sample_input = torch.Tensor(np.random.randn(1, 64, 12, 12))
-    sample_input2 = torch.Tensor(np.random.randn(1, 64, 12, 12))
-    sample_input3 = torch.Tensor(np.random.randn(1, 64, 12, 12))
+    #state_trans_module = State_Transition_Module()
+    initial = State_Transition_Module()
+    state = np.random.rand(1,192,10,10)
+    action = np.random.rand(1,22,1,1)
+    initial.forward(torch.Tensor(state),torch.Tensor(action))
 
-    initial_state_module = Initial_State_Module()
-    op = initial_state_module.forward(sample_input,sample_input2,sample_input3)
 
     '''
     The .view() operation gives you a new view on the tensor without copying any data.
