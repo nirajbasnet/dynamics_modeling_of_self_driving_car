@@ -18,7 +18,10 @@ class Conv_Stack(nn.Module):
     def forward(self, input):
         input = self.conv1(input)
         input = self.leakyrelu_1(input)
+        print("dd", input.shape)
+        time.sleep(3)
         input_ = self.conv2(input)
+        print("ee",input_.shape)
         input = self.leakyrelu_2(input+input_)
         input = self.conv3(input)
         return input
@@ -29,19 +32,20 @@ class Conv_Stack(nn.Module):
 
 ''' torch.nn.functional.pixel_shuffle does exactly what tf.nn.depth_to_space does,
 PyTorch doesn't have any function to do the inverse operation similar to tf.nn.space_to_depth'''
-# class DepthToSpace(nn.Module):
-#
-#     def __init__(self, block_size):
-#         super(DepthToSpace,self).__init__()
-#         self.blocksize = block_size
-#
-#     def forward(self, input): # input should be 4-dimensional of the formal (None, Channel-Depth, Height,Width)
-#         no_dimen, channel_depth, height, width = input.shape
-#         input = input.view(no_dimen, self.blocksize, self.blocksize, channel_depth // (self.blocksize ** 2), height, width)
-#         input = input.permute(no_dimen, channel_depth//(self.blocksize^2), height, self.blocksize, width, self.blocksize).contiguous()
-#         input = input.view(no_dimen, channel_depth // (self.blocksize ** 2), height * self.blocksize, width * self.blocksize)
-#         return input
-#
+
+class DepthToSpace(nn.Module):
+
+    def __init__(self, block_size):
+        super(DepthToSpace,self).__init__()
+        self.blocksize = block_size
+
+    def forward(self, input): # input should be 4-dimensional of the formal (None, Channel-Depth, Height,Width)
+        no_dimen, channel_depth, height, width = input.shape
+        input = input.view(no_dimen, self.blocksize, self.blocksize, channel_depth // (self.blocksize ** 2), height, width)
+        input = input.permute(no_dimen, channel_depth//(self.blocksize^2), height, self.blocksize, width, self.blocksize).contiguous()
+        input = input.view(no_dimen, channel_depth // (self.blocksize ** 2), height * self.blocksize, width * self.blocksize)
+        return input
+
 
 
 class SpaceToDepth(nn.Module): #space_to_depth is a convolutional practice used very often for lossless spatial dimensionality reduction
@@ -137,7 +141,7 @@ class State_Transition_Module(nn.Module):
         self.res_conv_1 = Residual_Conv_Stack(in_channelss= 214, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=2, p3=1)
         self.leaky_relu = nn.LeakyReLU()
         self.pool_and_inject = Pool_and_Inject()
-        self.res_conv_2 = Residual_Conv_Stack(in_channelss=246, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=2, p3=1)
+        self.res_conv_2 = Residual_Conv_Stack(in_channelss=246, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=0, p3=1)
 
     def forward(self, last_state, reshaped_last_action):
         action_to_concat = torch.repeat_interleave(reshaped_last_action,repeats = last_state.shape[2], dim = 2) #Tile operation
@@ -147,7 +151,49 @@ class State_Transition_Module(nn.Module):
         input = self.leaky_relu(input)
         input = self.pool_and_inject(input)
         input = self.res_conv_2(input) #input fed to resconv shape 1, 246, 10, 10
-        return input
+        return input #returns a state of dimensions 1, 192, 10, 10
+
+class Decoder_Module():
+    def __init__(self):
+        super(Decoder_Module, self).__init__()
+
+        # LHS
+        self.conv1 = nn.Conv2d(in_channels=192, out_channels=24, kernel_size=3)
+        self.leaky_relu = nn.LeakyReLU()
+        # will flatten after this to feed to a linear layer
+        self.linear_1 = nn.Linear(in_features=1*24*8*8, out_features=128) #input shape is 1, 24, 8, 8
+        ################For Predicted Reward#############################
+        self.linear_2 = nn.Linear(in_features=128, out_features=1)
+        #RHS
+        self.conv_stack_1 = Conv_Stack(in_1=192,in_2=32, k1=1, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=0,p2=2,p3=0)
+        self.leaky_relu_1 = nn.LeakyReLU()
+        self.conv_stack_2 = Conv_Stack(in_1=16,in_2=64, k1=3, c1=64, k2=3, c2=64, k3=1, c3=48, s1=1, s2=1, s3=1, p1=0,p2=1,p3=0)
+        self.linear_added = nn.Linear(in_features=1*3*56*56, out_features=150*150)
+        ################For Predicted Observation########################
+
+
+
+
+    def forward(self, input): #gets a state as the input with dimensions 1, 192, 10, 10
+        #LHS
+        input_1 = self.conv1(input)
+        input_1 = self.leaky_relu(input_1) #output shape is 1, 24, 8, 8
+        input_1 = self.linear_1(input_1.flatten())
+        input_1 = self.linear_2(input_1)
+        #RHS
+        input_2 = self.conv_stack_1(input)
+        input_2 = self.leaky_relu_1(input_2)
+        input_2 = torch.nn.functional.pixel_shuffle(input_2,2) #output is 1,16,16,16
+        input_2 = self.conv_stack_2(input_2)
+        input_2 = torch.nn.functional.pixel_shuffle(input_2,2) #output is [1, 3, 56, 56], so flattening gives 1*3*56*56
+        input_2 = (self.linear_added(input_2.flatten())) #output is 150*150
+
+        return input_1, input_2
+
+
+
+
+
 
 
 
@@ -155,10 +201,16 @@ class State_Transition_Module(nn.Module):
 if __name__ == "__main__":
 
     #state_trans_module = State_Transition_Module()
-    initial = State_Transition_Module()
-    state = np.random.rand(1,192,10,10)
-    action = np.random.rand(1,22,1,1)
-    initial.forward(torch.Tensor(state),torch.Tensor(action))
+    # initial = State_Transition_Module()
+    # state = np.random.rand(1,192,10,10)
+    # action = np.random.rand(1,22,1,1)
+    # initial.forward(torch.Tensor(state),torch.Tensor(action))
+
+    decoder = Decoder_Module()
+    a = np.ones((1, 192, 10, 10))
+    decoder.forward(torch.FloatTensor(a))
+
+
 
 
     '''
