@@ -5,6 +5,7 @@ import torch.nn as nn, time, torch
 import numpy as np
 
 
+
 class Conv_Stack(nn.Module):
 
     def __init__(self, in_1=16,k1=3,c1=1, in_2=16, k2=3,c2=1,k3=3,c3=1,s1=1,s2=1,s3=1,p1=0,p2=0,p3=0):
@@ -45,8 +46,6 @@ class DepthToSpace(nn.Module):
         input = input.permute(no_dimen, channel_depth//(self.blocksize^2), height, self.blocksize, width, self.blocksize).contiguous()
         input = input.view(no_dimen, channel_depth // (self.blocksize ** 2), height * self.blocksize, width * self.blocksize)
         return input
-
-
 
 class SpaceToDepth(nn.Module): #space_to_depth is a convolutional practice used very often for lossless spatial dimensionality reduction
 
@@ -192,28 +191,7 @@ class Decoder_Module():
 
 
 
-
-
-
-
-
-
-if __name__ == "__main__":
-
-    #state_trans_module = State_Transition_Module()
-    # initial = State_Transition_Module()
-    # state = np.random.rand(1,192,10,10)
-    # action = np.random.rand(1,22,1,1)
-    # initial.forward(torch.Tensor(state),torch.Tensor(action))
-
-    decoder = Decoder_Module()
-    a = np.ones((1, 192, 10, 10))
-    decoder.forward(torch.FloatTensor(a))
-
-
-
-
     '''
     The .view() operation gives you a new view on the tensor without copying any data.
-This means view is cheap to call and you don’t think too much about potential performance issues.
+    This means view is cheap to call and you don’t think too much about potential performance issues.
     '''
