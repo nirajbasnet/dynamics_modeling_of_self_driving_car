@@ -19,10 +19,8 @@ class Conv_Stack(nn.Module):
     def forward(self, input):
         input = self.conv1(input)
         input = self.leakyrelu_1(input)
-        print("dd", input.shape)
         time.sleep(3)
         input_ = self.conv2(input)
-        print("ee",input_.shape)
         input = self.leakyrelu_2(input+input_)
         input = self.conv3(input)
         return input
@@ -54,7 +52,7 @@ class SpaceToDepth(nn.Module): #space_to_depth is a convolutional practice used 
         self.block_size = block_size
 
     def forward(self, x):
-        n, c, h, w = x.size()
+        n, c, h, w = x.shape[0],x.shape[1],x.shape[2],x.shape[3]
         unfolded_x = torch.nn.functional.unfold(x, self.block_size, stride=self.block_size)
         N_C_H_W = unfolded_x.view(n, c * self.block_size ** 2, h // self.block_size, w // self.block_size)
         return N_C_H_W # N , C, H, W --> 1 16 37 37
