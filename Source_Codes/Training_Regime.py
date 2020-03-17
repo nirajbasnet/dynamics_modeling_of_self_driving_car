@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
     print("Training starts. t = ",timesteps_before_each_update,"\n")
     while data_counter <= 19650:
-        print("Backpropagating now.")
+        print("Iteration: ", str(data_counter))
 
         #env_model.obs_minus_2, env_model.obs_minus_1, env_model.obs_0 = torch.FloatTensor(env_model.all_obs[data_counter].reshape()), torch.FloatTensor(env_model.all_obs[data_counter+1]), torch.FloatTensor(env_model.all_obs[data_counter+2])
         #env_model.action_to_take = torch.FloatTensor(np.array(env_model.all_actions_with_rewards[data_counter][0]))
@@ -201,7 +201,7 @@ if __name__ == "__main__":
         # env_model.rewards_list = []
         # env_model.obs_prediction_list = []
 
-
+        del total_loss, reward_pred_loss, obs_pred_loss
 
 
         #Update necesssary variables
