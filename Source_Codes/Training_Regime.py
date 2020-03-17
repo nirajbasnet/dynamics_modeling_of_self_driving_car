@@ -24,6 +24,7 @@ class Environment_Model_Architecture(nn.Module):
         self.next_state = 0 #Initially, nothing.
 
         # Read the data set and move to cuda device
+        print("Reading the files from the disk now.")
         self.all_obs, self.all_ground_truth_next_obs, self.all_actions_with_rewards = get_training_data()
         print("Files read from the disk.")
 
