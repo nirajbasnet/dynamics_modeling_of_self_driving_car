@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from PIL import Image
 import os, os.path
 import matplotlib.pyplot as plt, copy
-import argparse
+import argparse, sys
 
 possible_velocity = [0.5,0.75,1,1.25,1.5]
 possible_deltas = [-0.4188, -0.36652, -0.31416, -0.2618, -0.20944, -0.157080, -0.10472, -0.05236, 0, 0.05236, 0.10472, 0.15708, 0.20944, 0.2618, 0.31416, 0.36652, 0.4188]
@@ -123,9 +123,14 @@ if __name__ == "__main__":
     device = torch.cuda.current_device()
     print("Current cuda device is ", device)
 
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
-    lrate = args[0]
+    # parser = argparse.ArgumentParser()
+    #
+    # parser.add_argument("--lr", default=0.003)
+    #
+    # args = parser.parse_args()
+    #lrate = args.lr
+
+    lrate = sys.argv[1]
 
     env_model = Environment_Model_Architecture().to(device)
     print("Environment instance created.\n")
