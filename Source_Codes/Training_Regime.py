@@ -26,7 +26,7 @@ class Environment_Model_Architecture(nn.Module):
         # Read the data set and move to cuda device
         print("Reading the files from the disk now.")
         self.all_obs, self.all_ground_truth_next_obs, self.all_actions_with_rewards = get_training_data()
-        print("Files read from the disk.")
+        print("Completed reading the files from the disk.\n")
 
 
         self.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(self.all_obs[0],(1,1,150,150)))
@@ -151,8 +151,7 @@ if __name__ == "__main__":
 
     print("Training starts. t = ",timesteps_before_each_update,"\n")
     while data_counter <= 19650:
-        print("Iteration: ", str(data_counter))
-        time.sleep(1111)
+        print("\nIteration: ", str(data_counter))
 
         #env_model.obs_minus_2, env_model.obs_minus_1, env_model.obs_0 = torch.FloatTensor(env_model.all_obs[data_counter].reshape()), torch.FloatTensor(env_model.all_obs[data_counter+1]), torch.FloatTensor(env_model.all_obs[data_counter+2])
         #env_model.action_to_take = torch.FloatTensor(np.array(env_model.all_actions_with_rewards[data_counter][0]))
@@ -180,9 +179,10 @@ if __name__ == "__main__":
         obs_pred_loss = obs_prediction_loss_func(predicted_next_obs, true_observation)
 
         total_loss = reward_pred_loss + obs_pred_loss
-
+        print("Total loss: ", str(total_loss))
+        print("Calculating the gradients.")
         total_loss.backward()
-
+        print("Now, backpropagating.")
         optimizer.step()
 
         # true_rewards_list = []
@@ -208,7 +208,8 @@ if __name__ == "__main__":
         env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
 
         #Save the model if necessary
-        if data_counter%100 == 0:
+        if data_counter%5 == 0:
+            print("Saving model now.")
             torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' + str(data_counter) + '.pth')
 
 
