@@ -25,6 +25,7 @@ class Environment_Model_Architecture(nn.Module):
 
         # Read the data set and move to cuda device
         self.all_obs, self.all_ground_truth_next_obs, self.all_actions_with_rewards = get_training_data()
+        print("Files read from the disk.")
 
 
         self.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(self.all_obs[0],(1,1,150,150)))
@@ -115,12 +116,12 @@ def action_one_hot_encoding(delta, velocity): #17 distinct deltas and 5 distince
 '''---------------------------------------------main()------------------------------------------------------------------'''
 if __name__ == "__main__":
 
-
+    torch.cuda.empty_cache()
     print("Total cuda-supporting devices count is ", torch.cuda.device_count())
     device = torch.cuda.current_device()
     print("Current cuda device is ", device)
 
-    torch.cuda.empty_cache()
+
 
     env_model = Environment_Model_Architecture().to(device)
 
@@ -149,6 +150,7 @@ if __name__ == "__main__":
     print("Training starts. t = ",timesteps_before_each_update,"\n")
     while data_counter <= 19650:
         print("Iteration: ", str(data_counter))
+        time.sleep(1111)
 
         #env_model.obs_minus_2, env_model.obs_minus_1, env_model.obs_0 = torch.FloatTensor(env_model.all_obs[data_counter].reshape()), torch.FloatTensor(env_model.all_obs[data_counter+1]), torch.FloatTensor(env_model.all_obs[data_counter+2])
         #env_model.action_to_take = torch.FloatTensor(np.array(env_model.all_actions_with_rewards[data_counter][0]))
