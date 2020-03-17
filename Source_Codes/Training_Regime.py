@@ -210,7 +210,7 @@ if __name__ == "__main__":
         #Save the model if necessary
         if data_counter%100 == 0:
             print("Saving model now.")
-            torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' + str(data_counter) + '.pth')
+            torch.save(env_model.state_dict(), '../../../../../../../scratch/being_aerys/Saved_Models/Env_Model_' + str(data_counter) + '.pth')
 
 
 
