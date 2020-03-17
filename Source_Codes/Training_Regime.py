@@ -36,13 +36,10 @@ class Environment_Model_Architecture(nn.Module):
         self.embedded_obs_1 = self.observation_encoder(self.obs_minus_2)
         self.embedded_obs_2 = self.observation_encoder(self.obs_minus_1)
         self.embedded_obs_3 = self.observation_encoder(self.obs_0)
-
         self.action_to_take_original = torch.cuda.FloatTensor(self.all_actions_with_rewards[2]) #Start with the third action
         self.velocity = self.action_to_take_original[0]
         self.delta = self.action_to_take_original[1]
         self.one_hot_action = action_one_hot_encoding(self.delta,self.velocity)
-        print("Initial one hot actionL ", self.one_hot_action)
-
         self.rewards_list = []
         self.obs_prediction_list = []
 
@@ -55,10 +52,7 @@ class Environment_Model_Architecture(nn.Module):
         self.embedded_obs_3 = self.observation_encoder(self.obs_0)
         #Generate Initial State using the embeddings
         self.current_state = self.initial_state_generator(self.embedded_obs_1,self.embedded_obs_2,self.embedded_obs_3)
-        print("Initial state is: ", self.current_state.shape)
-        '''Make sure the passed action is reshaped.'''
         #Get the next state
-        print("geting next OHA: ", self.one_hot_action)
         self.next_state = self.transition_module(self.current_state, self.one_hot_action)
         #decode the reward and the next observation for the action taken at current state
         self.reward, self.obs_prediction = self.obseration_and_reward_decoder(self.next_state)
@@ -103,21 +97,14 @@ def action_one_hot_encoding(delta, velocity): #17 distinct deltas and 5 distince
     #[-0.4188, -0.36652, -0.31416, -0.2618, -0.20944, -0.157080, -0.10472, -0.05236, 0, 0.05236, 0.10472, 0.15708, 0.20944, 0.2618, 0.31416, 0.36652, 0.4188]
     #[0.5,0.75,1,1.25,1.5]'''
 
-    print("delta",delta,velocity)
-
     delta_encoding = np.zeros(17)
     idx = int(delta / 0.05)
-    print(idx)
     delta_encoding[idx + 8] = 1
 
 
     vel_encoding = np.zeros(5)
     idx_vel = int(velocity / 0.25) - 2
-    print(idx_vel)
     vel_encoding[idx_vel] = 1
-
-    print(delta_encoding, vel_encoding)
-
     return (torch.cuda.FloatTensor(np.concatenate((delta_encoding, vel_encoding), axis=0)))
 
 
@@ -183,8 +170,6 @@ if __name__ == "__main__":
         optimizer.zero_grad()
 
         #reward_loss = reward_loss(env_model.rewards_list, true_rewards_list)
-        print(predicted_reward_of_action_taken,true_reward)
-        time.sleep(2)
         reward_pred_loss = reward_loss_func(predicted_reward_of_action_taken,true_reward)
         #obs_pred_loss = obs_prediction_loss_func(env_model.obs_prediction_list, true_predictions_list)
         true_observation = torch.flatten(true_observation)

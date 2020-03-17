@@ -99,13 +99,8 @@ class Residual_Conv_Stack(nn.Module):
         input_ = self.conv2(input_)
         input_ = self.leakyrelu_2(input_)
         input_ = self.conv3(input_)
-
-        print("inputtttt", input_.shape)
         # To make uniform such that they can be added, pass input_ thru a convoulution
         input_ = self.conv4(input_)
-        print(input_.shape,input.shape)
-        print("----------------------------")
-
         input_ = input + input_
 
         return input_
@@ -155,29 +150,17 @@ class State_Transition_Module(nn.Module):
         self.res_conv_2 = Residual_Conv_Stack(in_channelss=64, k1=3, c1=32, k2=5, c2=32, k3=3, c3=64, s1=1, s2=1, s3=1, p1=1, p2=0, p3=3, final_op=64)
 
     def forward(self, last_state, not_reshaped_last_action):
-        print("State obtained has shape: ", last_state.shape)
         reshaped_last_action = not_reshaped_last_action.reshape((1,22,1,1)) #converting into 22 channels ffrom a vecroe to make it suitable for tile operation
         action_to_concat = torch.repeat_interleave(reshaped_last_action,repeats = last_state.shape[2], dim = 2) #Tile operation
         action_to_concat = torch.repeat_interleave(action_to_concat, repeats = last_state.shape[3], dim = 3)
         input = torch.cat((last_state, action_to_concat),dim=1) #state shape: 1, 64, 10, 10, action shape: 1,22,10,10
-        print("Shape of state and action concatenated: ", input.shape)
 
-        print("input to resconv1: ", input.shape)
         input = self.res_conv_1(input) #input fed to resconv shape 1, 86, 10, 10
-        print("Op from resconv1:", input.shape)
         input = self.leaky_relu(input)
 
-        print("input shape to pool and inject layer: ", input.shape)
         input = self.pool_and_inject(input)
 
-
-
-        print("Pool and inject done:-------------------------------------------------------------")
-        time.sleep(1)
-        print("op of pool and inject layer and input resconv2 ", input.shape)
-
         input = self.res_conv_2(input) #input fed to resconv shape 1, 118, 10, 10
-        print("op shape of resconv 2: ", input.shape,"----------")
 
         return input #returns a state of dimensions 1, 64, 10, 10
 
