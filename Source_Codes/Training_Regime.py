@@ -124,6 +124,7 @@ if __name__ == "__main__":
 
 
     env_model = Environment_Model_Architecture().to(device)
+    print("Environment instance created.\n")
 
     timesteps_before_each_update = 1
 
