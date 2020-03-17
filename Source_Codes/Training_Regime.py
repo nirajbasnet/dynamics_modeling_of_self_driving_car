@@ -146,7 +146,7 @@ if __name__ == "__main__":
     reward_loss_func = nn.MSELoss()
     obs_prediction_loss_func = nn.KLDivLoss()
 
-    optimizer = torch.optim.RMSprop(env_model.parameters(), lr=0.005)
+    optimizer = torch.optim.RMSprop(env_model.parameters(), lr=0.0005)
 
 
     print("Training starts. t = ",timesteps_before_each_update,"\n")
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
 
         #Save the model if necessary
-        if data_counter%5 == 0:
+        if data_counter%100 == 0:
             print("Saving model now.")
             torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' + str(data_counter) + '.pth')
 
