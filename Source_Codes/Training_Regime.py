@@ -131,6 +131,7 @@ if __name__ == "__main__":
     #lrate = args.lr
 
     lrate = sys.argv[1]
+    print("The learning rate used is: ", lrate)
 
     env_model = Environment_Model_Architecture().to(device)
     print("Environment instance created.\n")
