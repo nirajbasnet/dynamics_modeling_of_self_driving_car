@@ -289,14 +289,20 @@ if __name__ == "__main__":
         # tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_obs_list)).flatten()
         # tensor_of_true_obs_list = (torch.cuda.FloatTensor(true_obs_list)).flatten()
 
-        reward_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_reward_list,
-                                            single_torch_true_reward_list, )
-        obs_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_obs_list,
-                                                 single_torch_true_obs_list, )
+        '''KL Divergence Loss'''
+        # reward_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_reward_list,
+        #                                     single_torch_true_reward_list, )
+        # obs_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_obs_list,
+        #                                          single_torch_true_obs_list, )
+        '''MSE Loss'''
+        reward_pred_loss = nn.MSELoss(single_torch_tensor_pred_reward_list,
+                                                single_torch_true_reward_list, )
+        obs_pred_loss = nn.MSELoss(single_torch_tensor_pred_obs_list,
+                                             single_torch_true_obs_list, )
 
         '''reset all the lists and other variables here'''
 
-        total_loss = 0.1*reward_pred_loss + obs_pred_loss
+        total_loss = 10 * reward_pred_loss + obs_pred_loss
         print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
         print("Total loss: ", str(total_loss))
         print("Learning rate: ",str(scheduler.get_lr()))
