@@ -250,9 +250,9 @@ if __name__ == "__main__":
         optimizer.zero_grad()
 
         #reward_loss = reward_loss(env_model.rewards_list, true_rewards_list)
-        reward_pred_loss = reward_loss_func(prediction_reward_list,true_reward_list)
+        reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
         #obs_pred_loss = obs_prediction_loss_func(env_model.obs_prediction_list, true_predictions_list)
-        obs_pred_loss = obs_prediction_loss_func(prediction_observation_list, true_obs_list)
+        obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
 
 
         '''reset all the lists and other variables here'''
