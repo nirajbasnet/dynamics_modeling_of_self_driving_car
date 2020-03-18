@@ -248,12 +248,14 @@ if __name__ == "__main__":
 
         #if data_counter%timesteps_before_each_update == 2: #At every step
         optimizer.zero_grad()
+        '''Instead of MSE loss, using KL divergence.'''
+        # reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
+        # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
 
-        #reward_loss = reward_loss(env_model.rewards_list, true_rewards_list)
-        reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
-        #obs_pred_loss = obs_prediction_loss_func(env_model.obs_prediction_list, true_predictions_list)
-        obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
-
+        reward_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_reward_list),
+                                            torch.cuda.FloatTensor(true_reward_list))
+        obs_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_observation_list),
+                                                 torch.cuda.FloatTensor(true_obs_list))
 
         '''reset all the lists and other variables here'''
 
