@@ -330,7 +330,7 @@ if __name__ == "__main__":
 
         '''reset all the lists and other variables here'''
 
-        total_loss = reward_pred_loss + obs_pred_loss
+        total_loss = 10*reward_pred_loss + obs_pred_loss
         print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
         print("Total loss: ", str(total_loss))
         print("Learning rate: ",str(scheduler.get_lr()))
