@@ -153,11 +153,39 @@ if __name__ == "__main__":
     print("Current cuda device is ", device)
 
     learning_rate = float(sys.argv[1])
+
+
+
+
+
     print("The learning rate used is: ", learning_rate,".\n")
 
     env_model = Environment_Model_Architecture().to(device)
     print("Environment instance created.\n")
 
+    if float(sys.argv[2]) == 1:
+        #Load the saved model parameters.
+        loading_model = input("Which saved model num do you want to load?\n")
+
+        saved_state_statistics_of_the_model = torch.load('../Saved_Models/Env_Model_'+str(loading_model)+ '.pth')
+        # for keyname_of_the_state_statistic in saved_state_statistics_of_the_model:
+        #     print(keyname_of_the_state_statistic)
+
+        '''Get your new model's statistics'''
+        new_model_statistics_dictionary = env_model.state_dict()  # get the model's statistics first
+
+        '''Override the statistics varible's parameters with the ones from the saved model'''
+        for key, value in saved_state_statistics_of_the_model.items():
+            if key in new_model_statistics_dictionary:
+                new_model_statistics_dictionary.update({key: value})
+
+        '''load these new parameters onto your new model'''
+        env_model.load_state_dict(new_model_statistics_dictionary)
+
+        print("Environment model parameters loaded from the saved model.")
+
+    else:
+        print("Not loading the env model from a pre-learned model.\n")
 
     #seed = 42
     #torch.cuda.manual_seed(seed)
