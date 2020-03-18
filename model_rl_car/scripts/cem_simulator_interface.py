@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3.6
 
 import os
 import time
@@ -6,27 +6,24 @@ import numpy as np
 import copy
 import csv
 from math import sin, cos, tan
-from scipy.misc import imsave
 import rospy
+import math
 import matplotlib
-from geometry_msgs.msg import Pose, PoseStamped, Quaternion
+from geometry_msgs.msg import Pose,Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Path, Odometry
-from std_msgs.msg import Duration, Header, String
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from std_msgs.msg import Duration, Header, String,Bool
 from visualization_msgs.msg import Marker, MarkerArray
 from sensor_msgs.msg import LaserScan
 
 class SimInterface:
     def __init__(self):
-        rospy.init_node('sim_interface_node')
         cmd_vel_topic = rospy.get_param('cmd_vel_topic_name', '/nav')
         odom_topic = rospy.get_param('odom_topic_name', '/odom')
         goal_topic = rospy.get_param('goal_topic_name', '/move_base_simple/goal')
         key_topic = rospy.get_param('key_topic_name', '/key')
         self.car_frame = rospy.get_param('car_frame', 'base_link')
         self.GOAL_THRESHOLD = rospy.get_param('goal_threshold', 0.50)
-
         self.DEBUG_MODE = rospy.get_param('debug_mode', True)
 
         dirname = os.path.dirname(__file__)
@@ -57,6 +54,7 @@ class SimInterface:
         self.lap_count = 0
         self.COUNT_FLAG = False
         self.TRAINING_LAPS = 30
+        self.STEP_TIME = 0.1
 
         self.current_pose = np.array([0.0, 0.0, 0.0])
         self.current_vel = None
@@ -70,6 +68,8 @@ class SimInterface:
         self.current_action = None
         self.current_obs = None
         self.current_full_obs=None
+        self.reset_pose= None
+        self.reset_image_state = None
 
         # Goal status related variables
         self.goal_pose = None
@@ -78,21 +78,29 @@ class SimInterface:
         self.LIDAR_INIT = False
         self.NAVIGATION_ENABLE = False
         self.ACTION_INIT = False
+        self.ODOM_INIT = False
         self.APPEND_MODE= False
         self.PROG_COMPLETE_FLAG = False
+        self.COLLISION_FLAG= False
 
         # Publishers
         self.cmd_vel_pub = rospy.Publisher(cmd_vel_topic, AckermannDriveStamped, queue_size=10)
         self.keyboard_pub = rospy.Publisher(key_topic, String, queue_size=10)
         self.lap_pub = rospy.Publisher("turning_mode", String, queue_size=1)
+        self.pose_pub = rospy.Publisher("initialpose",PoseWithCovarianceStamped,queue_size=1)
 
         # Subscribers
         rospy.Subscriber(odom_topic, Odometry, self.odom_callback, queue_size=1)
         rospy.Subscriber(goal_topic, PoseStamped, self.goal_callback, queue_size=1)
         rospy.Subscriber('/scan', LaserScan, self.lidarCB, queue_size=1)
         rospy.Subscriber('/action', AckermannDriveStamped, self.action_callback, queue_size=1)
+        rospy.Subscriber('/collision_status', Bool, self.collision_callback, queue_size=1)
+
         # Timer callback function for the control loop
         # rospy.Timer(rospy.Duration(1.0 / self.CONTROLLER_FREQ), self.controlLoopCB)
+
+    def collision_callback(self,msg):
+        self.COLLISION_FLAG = msg.data
 
     def create_header(self, frame_id):
         header = Header()
@@ -101,12 +109,38 @@ class SimInterface:
         return header
 
     def heading(self, yaw):
-        q = quaternion_from_euler(0, 0, yaw)
-        return Quaternion(*q)
+        qdata = Quaternion()
+        qdata.x,qdata.y,qdata.z,qdata.w= self.euler_to_quaternion(0, 0, yaw)
+        return qdata
 
     def quaternion_to_euler_yaw(self, orientation):
-        _, _, yaw = euler_from_quaternion((orientation.x, orientation.y, orientation.z, orientation.w))
+        _, _, yaw = self.quaternion_to_euler(orientation.x, orientation.y, orientation.z, orientation.w)
         return yaw
+
+    def euler_to_quaternion(self,roll, pitch, yaw):
+        qx = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(
+            yaw / 2)
+        qy = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(
+            yaw / 2)
+        qz = np.cos(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2) - np.sin(roll / 2) * np.sin(pitch / 2) * np.cos(
+            yaw / 2)
+        qw = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(
+            yaw / 2)
+
+        return qx, qy, qz, qw
+
+    def quaternion_to_euler(self,x, y, z, w):
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + y * y)
+        roll = math.atan2(t0, t1)
+        t2 = +2.0 * (w * y - z * x)
+        t2 = +1.0 if t2 > +1.0 else t2
+        t2 = -1.0 if t2 < -1.0 else t2
+        pitch = math.asin(t2)
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (y * y + z * z)
+        yaw = math.atan2(t3, t4)
+        return yaw, pitch, roll
 
     def generate_rollout_trajectory(self, MODE='random'):
         '''generate random trajectories sampled from real world-like or random distribution so that points can be sampled from them to train the model'''
@@ -165,6 +199,31 @@ class SimInterface:
         state[2] += (vel / self.L) * tan(delta) * self.dT
         return state
 
+    def reset_environment(self):
+        self.COLLISION_FLAG = False
+        pose_info = PoseWithCovarianceStamped()
+        pose_info.pose.pose.position = Point(self.reset_pose[0],self.reset_pose[1],0.0)
+        pose_info.pose.pose.orientation = self.heading(self.reset_pose[2])
+        self.pose_pub.publish(pose_info)
+        return self.reset_image_state
+    
+    def get_reset_state(self):
+        return self.reset_image_state
+
+    def step(self,vel,delta):
+        self.current_state = copy.deepcopy(self.current_pose)
+        self.send_motor_command(vel,delta)
+        start_time = time.time()
+        # wait for 100ms to see effect of action
+        while not rospy.is_shutdown():
+            if time.time()- start_time>=self.STEP_TIME:
+                break
+        next_state = copy.deepcopy(self.current_pose)
+        next_state_image = self.get_local_image(self.original_ranges)
+        reward, lap_complete_status = self.calculate_reward(next_state[0:2], self.current_state[0:2])
+        return next_state_image,reward,lap_complete_status
+
+
     def toggle_navigation(self):
         '''send navigation toggle key data 'n' using keyboard topic'''
         msg = String()
@@ -188,6 +247,7 @@ class SimInterface:
         if not self.LIDAR_INIT:
             self.LIDAR_DELTA_ANGLE_INCR = msg.angle_increment
             self.LIDAR_ANGLE_MIN = msg.angle_min
+            self.reset_image_state = self.get_local_image(np.array(msg.ranges))
             self.LIDAR_INIT = True
 
         self.downsampled_ranges = np.array(msg.ranges[::self.ANGLE_STEP])
@@ -196,26 +256,31 @@ class SimInterface:
 
     def construct_local_image(self,mode,idx,lidar_ranges):
         '''construct 2d image from lidar observation in local coordinate system'''
-        img = 100*np.ones((150,150),dtype=np.uint8)
-        for i in range(len(lidar_ranges)):
-            scan_range = lidar_ranges[i]  # range measured for the particular scan
-            scan_angle = self.LIDAR_ANGLE_MIN + i * self.LIDAR_DELTA_ANGLE_INCR  # bearing measured
-            if scan_range >15.0:
-                continue
-            # find position of cells in the local frame
-            occupied_x = scan_range * cos(scan_angle)
-            occupied_y = scan_range * sin(scan_angle)
-            p_x = int(occupied_x / self.GRID_SIZE)+self.Origin_X
-            p_y = int(occupied_y / self.GRID_SIZE)+self.Origin_Y
-            if( 0 <= p_x < 150 and 0<=p_y<150):
-                # img[p_x,p_y]=255
-                img[149-p_y,p_x] = 255
-        img[149-self.Origin_Y - 1:149-self.Origin_Y + 2, self.Origin_X - 1:self.Origin_X + 2] = 255
+        img = self.get_local_image(lidar_ranges)
         if mode =='train':
             filename="./images/train/img"+str(idx)+".png"
         else:
             filename = "./images/test/img" + str(idx) + ".png"
-        imsave(filename,img)
+        # imsave(filename,img)
+
+    def get_local_image(self,lidar_ranges):
+        img = 100.0 * np.ones((150, 150),dtype='float32')
+        for i in range(len(lidar_ranges)):
+            scan_range = lidar_ranges[i]  # range measured for the particular scan
+            scan_angle = self.LIDAR_ANGLE_MIN + i * self.LIDAR_DELTA_ANGLE_INCR  # bearing measured
+            if scan_range > 15.0:
+                continue
+            # find position of cells in the local frame
+            occupied_x = scan_range * cos(scan_angle)
+            occupied_y = scan_range * sin(scan_angle)
+            p_x = int(occupied_x / self.GRID_SIZE) + self.Origin_X
+            p_y = int(occupied_y / self.GRID_SIZE) + self.Origin_Y
+            if (0 <= p_x < 150 and 0 <= p_y < 150):
+                # img[p_x,p_y]=255
+                img[149 - p_y, p_x] = 255.0
+        img[149 - self.Origin_Y - 1:149 - self.Origin_Y + 2, self.Origin_X - 1:self.Origin_X + 2] = 255.0
+        return img
+
 
 
     def construct_lidar_observation_images(self):
@@ -231,6 +296,10 @@ class SimInterface:
         self.current_pose[0] = msg.pose.pose.position.x
         self.current_pose[1] = msg.pose.pose.position.y
         self.current_pose[2] = self.quaternion_to_euler_yaw(msg.pose.pose.orientation)
+        if not self.ODOM_INIT:
+            self.reset_pose = copy.deepcopy(self.current_pose)
+            self.ODOM_INIT = True
+
         self.current_vel = msg.twist.twist.linear.x
         if self.goal_received:
             dist2goal = np.linalg.norm(
@@ -300,17 +369,17 @@ class SimInterface:
         next_arc_length_travelled, next_lateral_deviation = self.find_current_arc_length(next_car_pos)
         current_arc_length_travelled, current_lateral_deviation = self.find_current_arc_length(current_car_pos)
         progress = next_arc_length_travelled - current_arc_length_travelled
-        if(0<next_arc_length_travelled<self.element_arc_lengths[len(self.element_arc_lengths)/3] and self.COUNT_FLAG):
+        if(0<next_arc_length_travelled<self.element_arc_lengths[int(len(self.element_arc_lengths)/3)] and self.COUNT_FLAG):
             self.lap_count +=1
             rospy.loginfo("Lap count=%s",self.lap_count)
             self.lap_pub.publish('incr')
             self.COUNT_FLAG = False
-            if(self.lap_count>=self.TRAINING_LAPS):
+            if(self.lap_count>=2):
                 self.toggle_navigation()
                 self.PROG_COMPLETE_FLAG=True
-                return 0, self.PROG_COMPLETE_FLAG
+                return 1, self.PROG_COMPLETE_FLAG
 
-        if(next_arc_length_travelled>self.element_arc_lengths[len(self.element_arc_lengths)/2]):
+        if(next_arc_length_travelled>self.element_arc_lengths[int(len(self.element_arc_lengths)/2)]):
             self.COUNT_FLAG = True
 
         if progress<0:
@@ -346,11 +415,11 @@ class SimInterface:
         self.cmd_vel_pub.publish(ackermann_cmd)
 
 
-if __name__ == '__main__':
-    sim_node = SimInterface()
-    while not rospy.is_shutdown():
-        if sim_node.PROG_COMPLETE_FLAG:
-            sim_node.write_data_to_file('train_data.csv')
-            sim_node.construct_lidar_observation_images()
-            sim_node.PROG_COMPLETE_FLAG =False
-    rospy.spin()
+# if __name__ == '__main__':
+#     sim_node = SimInterface()
+#     while not rospy.is_shutdown():
+#         if sim_node.PROG_COMPLETE_FLAG:
+#             sim_node.write_data_to_file('train_data.csv')
+#             sim_node.construct_lidar_observation_images()
+#             sim_node.PROG_COMPLETE_FLAG =False
+#     rospy.spin()

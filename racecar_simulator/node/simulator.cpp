@@ -11,6 +11,7 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Bool.h>
 
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -86,6 +87,7 @@ private:
     ros::Publisher scan_pub;
     ros::Publisher odom_pub;
     ros::Publisher imu_pub;
+    ros::Publisher collision_pub;
 
     // publisher for map with obstacles
     ros::Publisher map_pub;
@@ -201,6 +203,9 @@ public:
 
         // Make a publisher for publishing map with obstacles
         map_pub = n.advertise<nav_msgs::OccupancyGrid>("/map", 1);
+
+        // Make a publisher for publishing collision detected messages
+        collision_pub = n.advertise<std_msgs::Bool>("/collision_status",1);
 
         // Start a timer to output the pose
         update_pose_timer = n.createTimer(ros::Duration(update_pose_rate), &RacecarSimulator::update_pose, this);
@@ -318,6 +323,7 @@ public:
         pub_imu(timestamp);
 
 
+
         /// KEEP in sim
         // If we have a map, perform a scan
         if (map_exists) {
@@ -351,7 +357,9 @@ public:
                         if (!TTC) {
                             first_ttc_actions();
                         }
-
+                        std_msgs::Bool collision_msg;
+                        collision_msg.data= true;
+                        collision_pub.publish(collision_msg);
                         no_collision = false;
                         TTC = true;
 
@@ -362,7 +370,15 @@ public:
 
             // reset TTC
             if (no_collision)
+            {
+                if(TTC){
+                std_msgs::Bool collision_msg;
+                collision_msg.data= false;
+                // collision_pub.publish(collision_msg);    
+                }
                 TTC = false;
+                
+            }
 
             // Publish the laser message
             sensor_msgs::LaserScan scan_msg;

@@ -20,11 +20,11 @@ mass: 3.17 # kg (measured on car 'lidart')
 moment_inertia: .0398378 # kg m^2 (estimated as a rectangle with width and height of car and evenly distributed mass, then shifted to account for center of mass location)
 
 # The rate at which the pose and the lidar publish
-update_pose_rate: 0.025
+update_pose_rate: 0.02
 
 # Lidar simulation parameters
 scan_beams: 1080
-scan_field_of_view: 6.2831853 #4.71 # radians
+scan_field_of_view: 4.71 #4.71 # radians
 
 
 # The distance from the center of the

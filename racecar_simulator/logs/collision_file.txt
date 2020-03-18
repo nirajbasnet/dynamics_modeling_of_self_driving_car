@@ -1,0 +1,415 @@
+Collision #1 detected:
+TTC: 0.00307985 seconds
+Angle to obstacle: -0.975612 radians
+Time since start of sim: 63.8545 seconds
+
+Collision #2 detected:
+TTC: 0.0028268 seconds
+Angle to obstacle: -0.971246 radians
+Time since start of sim: 63.8739 seconds
+
+Collision #3 detected:
+TTC: 0.00457861 seconds
+Angle to obstacle: 0.945056 radians
+Time since start of sim: 69.5835 seconds
+
+Collision #4 detected:
+TTC: 0.00391691 seconds
+Angle to obstacle: -1.44268 radians
+Time since start of sim: 72.2393 seconds
+
+Collision #5 detected:
+TTC: 0.00991106 seconds
+Angle to obstacle: -1.36848 radians
+Time since start of sim: 72.2538 seconds
+
+Collision #6 detected:
+TTC: 0.0033569 seconds
+Angle to obstacle: -1.37721 radians
+Time since start of sim: 72.274 seconds
+
+Collision #7 detected:
+TTC: 0.00399782 seconds
+Angle to obstacle: -1.09784 radians
+Time since start of sim: 92.8954 seconds
+
+Collision #8 detected:
+TTC: 0.00817806 seconds
+Angle to obstacle: -1.09784 radians
+Time since start of sim: 92.9393 seconds
+
+Collision #9 detected:
+TTC: 0.00336153 seconds
+Angle to obstacle: -1.08038 radians
+Time since start of sim: 92.9393 seconds
+
+Collision #10 detected:
+TTC: 0.0037076 seconds
+Angle to obstacle: -1.66967 radians
+Time since start of sim: 98.9353 seconds
+
+Collision #11 detected:
+TTC: 0.00342852 seconds
+Angle to obstacle: -1.11966 radians
+Time since start of sim: 100.895 seconds
+
+Collision #12 detected:
+TTC: 0.00812708 seconds
+Angle to obstacle: -0.408142 radians
+Time since start of sim: 103.799 seconds
+
+Collision #13 detected:
+TTC: 0.00480494 seconds
+Angle to obstacle: -1.06291 radians
+Time since start of sim: 463.911 seconds
+
+Collision #14 detected:
+TTC: 0.00219788 seconds
+Angle to obstacle: 0.875213 radians
+Time since start of sim: 496.339 seconds
+
+Collision #15 detected:
+TTC: 0.00631474 seconds
+Angle to obstacle: 1.0018 radians
+Time since start of sim: 496.354 seconds
+
+Collision #16 detected:
+TTC: 0.00412337 seconds
+Angle to obstacle: -1.07165 radians
+Time since start of sim: 499.699 seconds
+
+Collision #17 detected:
+TTC: 0.00735546 seconds
+Angle to obstacle: -0.993072 radians
+Time since start of sim: 528.952 seconds
+
+Collision #18 detected:
+TTC: 0.00603625 seconds
+Angle to obstacle: 0.115677 radians
+Time since start of sim: 531.171 seconds
+
+Collision #19 detected:
+TTC: 0.00409834 seconds
+Angle to obstacle: -1.1153 radians
+Time since start of sim: 534.543 seconds
+
+Collision #20 detected:
+TTC: 0.00919373 seconds
+Angle to obstacle: -1.06291 radians
+Time since start of sim: 542.179 seconds
+
+Collision #21 detected:
+TTC: 0.0026999 seconds
+Angle to obstacle: -1.94468 radians
+Time since start of sim: 571.003 seconds
+
+Collision #22 detected:
+TTC: 0.00882434 seconds
+Angle to obstacle: -0.966881 radians
+Time since start of sim: 618.855 seconds
+
+Collision #23 detected:
+TTC: 0.00540859 seconds
+Angle to obstacle: -1.26371 radians
+Time since start of sim: 621.275 seconds
+
+Collision #24 detected:
+TTC: 0.00916734 seconds
+Angle to obstacle: -1.19823 radians
+Time since start of sim: 629.755 seconds
+
+Collision #25 detected:
+TTC: 0.00978 seconds
+Angle to obstacle: -1.26808 radians
+Time since start of sim: 629.755 seconds
+
+Collision #26 detected:
+TTC: 0.00546664 seconds
+Angle to obstacle: -1.10657 radians
+Time since start of sim: 631.495 seconds
+
+Collision #27 detected:
+TTC: 0.00965671 seconds
+Angle to obstacle: -1.52999 radians
+Time since start of sim: 647.715 seconds
+
+Collision #28 detected:
+TTC: 0.00582826 seconds
+Angle to obstacle: -1.38594 radians
+Time since start of sim: 647.734 seconds
+
+Collision #29 detected:
+TTC: 0.000906017 seconds
+Angle to obstacle: -1.05855 radians
+Time since start of sim: 661.483 seconds
+
+Collision #30 detected:
+TTC: 0.0070931 seconds
+Angle to obstacle: -1.15895 radians
+Time since start of sim: 663.535 seconds
+
+Collision #31 detected:
+TTC: 0.00630469 seconds
+Angle to obstacle: -1.08038 radians
+Time since start of sim: 667.195 seconds
+
+Collision #32 detected:
+TTC: 0.0086221 seconds
+Angle to obstacle: -1.46014 radians
+Time since start of sim: 682.014 seconds
+
+Collision #33 detected:
+TTC: 0.00167279 seconds
+Angle to obstacle: -1.42522 radians
+Time since start of sim: 682.055 seconds
+
+Collision #34 detected:
+TTC: 0.00322703 seconds
+Angle to obstacle: -1.0018 radians
+Time since start of sim: 684.611 seconds
+
+Collision #35 detected:
+TTC: 0.00224142 seconds
+Angle to obstacle: -1.08038 radians
+Time since start of sim: 687.375 seconds
+
+Collision #36 detected:
+TTC: 0.00548991 seconds
+Angle to obstacle: -1.06291 radians
+Time since start of sim: 687.415 seconds
+
+Collision #37 detected:
+TTC: 0.00528488 seconds
+Angle to obstacle: 0.0851207 radians
+Time since start of sim: 690.319 seconds
+
+Collision #38 detected:
+TTC: 0.00398371 seconds
+Angle to obstacle: 0.0676601 radians
+Time since start of sim: 690.334 seconds
+
+Collision #39 detected:
+TTC: 0.00558714 seconds
+Angle to obstacle: 0.0763903 radians
+Time since start of sim: 690.354 seconds
+
+Collision #40 detected:
+TTC: 0.000150935 seconds
+Angle to obstacle: -1.00617 radians
+Time since start of sim: 693.595 seconds
+
+Collision #41 detected:
+TTC: 0.00712842 seconds
+Angle to obstacle: -1.02799 radians
+Time since start of sim: 693.595 seconds
+
+Collision #42 detected:
+TTC: 0.00940632 seconds
+Angle to obstacle: 0.704972 radians
+Time since start of sim: 700.579 seconds
+
+Collision #43 detected:
+TTC: 0.00170863 seconds
+Angle to obstacle: -0.07639 radians
+Time since start of sim: 703.231 seconds
+
+Collision #44 detected:
+TTC: 0.000684694 seconds
+Angle to obstacle: -1.01926 radians
+Time since start of sim: 711.959 seconds
+
+Collision #45 detected:
+TTC: 0.000472911 seconds
+Angle to obstacle: -1.06728 radians
+Time since start of sim: 711.974 seconds
+
+Collision #46 detected:
+TTC: 0.00400699 seconds
+Angle to obstacle: -1.04545 radians
+Time since start of sim: 711.994 seconds
+
+Collision #47 detected:
+TTC: 0.00807474 seconds
+Angle to obstacle: -0.988707 radians
+Time since start of sim: 844.556 seconds
+
+Collision #48 detected:
+TTC: 0.00144753 seconds
+Angle to obstacle: -1.2026 radians
+Time since start of sim: 847.156 seconds
+
+Collision #49 detected:
+TTC: 0.000958235 seconds
+Angle to obstacle: -1.06291 radians
+Time since start of sim: 847.199 seconds
+
+Collision #50 detected:
+TTC: 0.00746841 seconds
+Angle to obstacle: -1.27244 radians
+Time since start of sim: 847.214 seconds
+
+Collision #51 detected:
+TTC: 0.00386766 seconds
+Angle to obstacle: -1.31173 radians
+Time since start of sim: 847.234 seconds
+
+Collision #52 detected:
+TTC: 0.00995582 seconds
+Angle to obstacle: -0.233536 radians
+Time since start of sim: 849.923 seconds
+
+Collision #53 detected:
+TTC: 0.0032892 seconds
+Angle to obstacle: -1.17641 radians
+Time since start of sim: 852.775 seconds
+
+Collision #54 detected:
+TTC: 0.0063525 seconds
+Angle to obstacle: -1.00617 radians
+Time since start of sim: 855.594 seconds
+
+Collision #55 detected:
+TTC: 0.00691505 seconds
+Angle to obstacle: -0.988707 radians
+Time since start of sim: 858.371 seconds
+
+Collision #56 detected:
+TTC: 0.00478776 seconds
+Angle to obstacle: -0.92323 radians
+Time since start of sim: 872.479 seconds
+
+Collision #57 detected:
+TTC: 0.00235179 seconds
+Angle to obstacle: -0.997437 radians
+Time since start of sim: 872.494 seconds
+
+Collision #58 detected:
+TTC: 0.00278762 seconds
+Angle to obstacle: -0.997437 radians
+Time since start of sim: 872.514 seconds
+
+Collision #59 detected:
+TTC: 0.00830083 seconds
+Angle to obstacle: -1.16768 radians
+Time since start of sim: 875.274 seconds
+
+Collision #60 detected:
+TTC: 0.00440432 seconds
+Angle to obstacle: -1.13276 radians
+Time since start of sim: 875.294 seconds
+
+Collision #61 detected:
+TTC: 0.00998353 seconds
+Angle to obstacle: -0.953786 radians
+Time since start of sim: 878.075 seconds
+
+Collision #62 detected:
+TTC: 0.00890728 seconds
+Angle to obstacle: -0.949421 radians
+Time since start of sim: 878.119 seconds
+
+Collision #63 detected:
+TTC: 0.00944104 seconds
+Angle to obstacle: -0.988707 radians
+Time since start of sim: 878.119 seconds
+
+Collision #64 detected:
+TTC: 0.00915457 seconds
+Angle to obstacle: -1.03672 radians
+Time since start of sim: 881.231 seconds
+
+Collision #65 detected:
+TTC: 0.00714697 seconds
+Angle to obstacle: -1.05418 radians
+Time since start of sim: 883.787 seconds
+
+Collision #66 detected:
+TTC: 0.00207923 seconds
+Angle to obstacle: -1.25062 radians
+Time since start of sim: 886.614 seconds
+
+Collision #67 detected:
+TTC: 0.00682301 seconds
+Angle to obstacle: -1.08474 radians
+Time since start of sim: 889.467 seconds
+
+Collision #68 detected:
+TTC: 0.00749295 seconds
+Angle to obstacle: -0.866483 radians
+Time since start of sim: 889.515 seconds
+
+Collision #69 detected:
+TTC: 0.0043904 seconds
+Angle to obstacle: -1.0018 radians
+Time since start of sim: 889.515 seconds
+
+Collision #70 detected:
+TTC: 0.0096401 seconds
+Angle to obstacle: -0.888309 radians
+Time since start of sim: 892.255 seconds
+
+Collision #71 detected:
+TTC: 0.00146922 seconds
+Angle to obstacle: -0.888309 radians
+Time since start of sim: 892.255 seconds
+
+Collision #72 detected:
+TTC: 0.00761169 seconds
+Angle to obstacle: -1.04109 radians
+Time since start of sim: 895.111 seconds
+
+Collision #73 detected:
+TTC: 0.00661904 seconds
+Angle to obstacle: -0.255361 radians
+Time since start of sim: 897.919 seconds
+
+Collision #74 detected:
+TTC: 0.00756952 seconds
+Angle to obstacle: -0.255361 radians
+Time since start of sim: 897.963 seconds
+
+Collision #75 detected:
+TTC: 0.00927977 seconds
+Angle to obstacle: -1.12403 radians
+Time since start of sim: 900.714 seconds
+
+Collision #76 detected:
+TTC: 0.00503599 seconds
+Angle to obstacle: -1.10657 radians
+Time since start of sim: 900.734 seconds
+
+Collision #77 detected:
+TTC: 0.000398234 seconds
+Angle to obstacle: -0.264092 radians
+Time since start of sim: 909.235 seconds
+
+Collision #78 detected:
+TTC: 0.00516968 seconds
+Angle to obstacle: -0.281552 radians
+Time since start of sim: 909.235 seconds
+
+Collision #79 detected:
+TTC: 0.00673991 seconds
+Angle to obstacle: -1.14585 radians
+Time since start of sim: 911.911 seconds
+
+Collision #80 detected:
+TTC: 0.00771283 seconds
+Angle to obstacle: -0.958151 radians
+Time since start of sim: 914.795 seconds
+
+Collision #81 detected:
+TTC: 0.0074893 seconds
+Angle to obstacle: -1.20696 radians
+Time since start of sim: 917.655 seconds
+
+Collision #82 detected:
+TTC: 0.00813382 seconds
+Angle to obstacle: -0.849022 radians
+Time since start of sim: 920.379 seconds
+
+Collision #83 detected:
+TTC: 0.00083451 seconds
+Angle to obstacle: -0.281552 radians
+Time since start of sim: 923.275 seconds
+
