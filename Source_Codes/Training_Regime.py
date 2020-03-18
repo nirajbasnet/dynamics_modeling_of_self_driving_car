@@ -165,9 +165,11 @@ if __name__ == "__main__":
 
     if float(sys.argv[2]) == 1:
         #Load the saved model parameters.
-        loading_model = input("Which saved model num do you want to load?\n")
+        loading_epoch_num = input("Which saved epoch num do you want to load?\n")
+        loading_iteration_num = input("Which iteration num do you want to load?\n")
 
-        saved_state_statistics_of_the_model = torch.load('../Saved_Models/Env_Model_'+str(loading_model)+ '.pth')
+
+        saved_state_statistics_of_the_model = torch.load('../Saved_Models/Env_Model_'+str(loading_epoch_num)+'_'+str(loading_iteration_num)+ '.pth')
         # for keyname_of_the_state_statistic in saved_state_statistics_of_the_model:
         #     print(keyname_of_the_state_statistic)
 
@@ -207,167 +209,122 @@ if __name__ == "__main__":
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
 
+    epoch_counter = 1
 
-    while data_counter <= 19648:
-        print("\nIteration: ", str(data_counter))
+    epoch_reward_loss_list = []
+    epoch_obs_loss_list = []
+    epoch_total_loss_list = []
 
-        #env_model.obs_minus_2, env_model.obs_minus_1, env_model.obs_0 = torch.FloatTensor(env_model.all_obs[data_counter].reshape()), torch.FloatTensor(env_model.all_obs[data_counter+1]), torch.FloatTensor(env_model.all_obs[data_counter+2])
-        #env_model.action_to_take = torch.FloatTensor(np.array(env_model.all_actions_with_rewards[data_counter][0]))
+    while True:
 
-        #Update necesssary variables
-      
-        '''Update the env_model obs'''
-        env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-2],(1,1,150,150)))
-        env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-1],(1,1,150,150)))
-        env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
-        
-        env_model.raw_action_0 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter])  # When data counter = 1, action to take from the file is 3
-        env_model.raw_action_1 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+1])
-        env_model.raw_action_2 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])
+        print("\nEpoch num: ", epoch_counter)
 
+        epoch_reward_loss_cumul = 0
+        epoch_obs_loss_cumul = 0
+        epoch_total_loss_cumul = 0
 
-        env_model.velocity_0 = env_model.raw_action_0[0]
-        env_model.delta_0 = env_model.raw_action_0[1]
-        env_model.velocity_1 = env_model.raw_action_1[0]
-        env_model.delta_1 = env_model.raw_action_1[1]
-        env_model.velocity_2 = env_model.raw_action_2[0]
-        env_model.delta_2 = env_model.raw_action_2[1]
+        while data_counter <= 19648:
+            print("\nIteration: ", str(data_counter))
 
+            #Update necesssary variables
+            '''Update the env_model obs'''
+            env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-2],(1,1,150,150)))
+            env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-1],(1,1,150,150)))
+            env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
 
-
-        env_model.one_hot_action_0 = action_one_hot_encoding(env_model.delta_0, env_model.velocity_0)
-        env_model.one_hot_action_1 = action_one_hot_encoding(env_model.delta_1, env_model.velocity_1)
-        env_model.one_hot_action_2 = action_one_hot_encoding(env_model.delta_2, env_model.velocity_2)
+            env_model.raw_action_0 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter])  # When data counter = 1, action to take from the file is 3
+            env_model.raw_action_1 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+1])
+            env_model.raw_action_2 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])
 
 
-        # prediction_reward_list = []
-        # prediction_observation_list = []
-
-        true_reward_list = []
-        true_obs_list = []
-
-        reward_pred_loss_list = []
-        obs_pred_loss_list = []
-
-        r_1,o_1,r_2,o_2,r_3,o_3 = env_model.forward()
-
-        # prediction_reward_list.append(r_1)
-        # prediction_reward_list.append(r_2)
-        # prediction_reward_list.append(r_3)
-        # prediction_observation_list.append(o_1)
-        # prediction_observation_list.append(o_2)
-        # prediction_observation_list.append(o_3)
-
-        '''Here'''
-        single_torch_tensor_pred_reward_list = torch.cat((r_1,r_2,r_3), dim=0)
-        single_torch_tensor_pred_obs_list = torch.cat((o_1, o_2, o_3), dim=0)
+            env_model.velocity_0 = env_model.raw_action_0[0]
+            env_model.delta_0 = env_model.raw_action_0[1]
+            env_model.velocity_1 = env_model.raw_action_1[0]
+            env_model.delta_1 = env_model.raw_action_1[1]
+            env_model.velocity_2 = env_model.raw_action_2[0]
+            env_model.delta_2 = env_model.raw_action_2[1]
 
 
+            env_model.one_hot_action_0 = action_one_hot_encoding(env_model.delta_0, env_model.velocity_0)
+            env_model.one_hot_action_1 = action_one_hot_encoding(env_model.delta_1, env_model.velocity_1)
+            env_model.one_hot_action_2 = action_one_hot_encoding(env_model.delta_2, env_model.velocity_2)
+
+            true_reward_list = []
+            true_obs_list = []
+
+            reward_pred_loss_list = []
+            obs_pred_loss_list = []
+
+            reward_1, observation_1, reward_2, observation_2, reward_3, observation_3 = env_model.forward()
+
+            concatenated_pred_reward = torch.cat((reward_1, reward_2, reward_3), dim=0)
+            concatenated_pred_obs = torch.cat((observation_1, observation_2, observation_3), dim=0)
+
+            true_reward_list.append(env_model.all_actions_with_rewards[data_counter][2] * 1)
+            true_observation_0 = env_model.all_ground_truth_next_obs[data_counter]
+            true_obs_list.append(true_observation_0)
+
+            true_reward_list.append(env_model.all_actions_with_rewards[data_counter+1][2] * 1)
+            true_observation_1 = env_model.all_ground_truth_next_obs[data_counter+1]
+            true_obs_list.append(true_observation_1)
+
+            true_reward_list.append(env_model.all_actions_with_rewards[data_counter+2][2] * 1)
+            true_observation_2 = env_model.all_ground_truth_next_obs[data_counter+2]
+            true_obs_list.append(true_observation_2)
+
+            single_torch_true_reward_list = torch.cuda.FloatTensor(true_reward_list).flatten()
+            single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
+
+            optimizer.zero_grad()
+
+            '''KL Divergence Loss'''
+            # reward_pred_loss = nn.functional.kl_div(concatenated_pred_reward,
+            #                                     single_torch_true_reward_list )
+            # obs_pred_loss = nn.functional.kl_div(concatenated_pred_obs,
+            #                                          single_torch_true_obs_list )
+            '''MSE Loss'''
+            reward_pred_loss = nn.functional.mse_loss(concatenated_pred_reward,
+                                                      single_torch_true_reward_list)
+            obs_pred_loss = nn.functional.mse_loss(concatenated_pred_obs,
+                                                   single_torch_true_obs_list)
 
 
+            total_loss = 10*reward_pred_loss + obs_pred_loss
+
+            #VVI to take only the data to avoid storing the gradients
+            epoch_reward_loss_cumul += reward_pred_loss.data
+            epoch_obs_loss_cumul += obs_pred_loss.data
+            epoch_total_loss_cumul += total_loss.data
+
+            print("Reward loss: ",str(reward_pred_loss) ,"\tObservation Loss: ",str(obs_pred_loss))
+            print("Total loss: ", str(total_loss))
+            print("Learning rate: ",str(scheduler.get_lr()))
+            total_loss.backward()
+            optimizer.step()
+            scheduler.step()
 
 
-        true_reward_list.append(env_model.all_actions_with_rewards[data_counter][2] * 1)
-        true_observation_0 = env_model.all_ground_truth_next_obs[data_counter]
-        true_obs_list.append(true_observation_0)
-
-        true_reward_list.append(env_model.all_actions_with_rewards[data_counter+1][2] * 1)
-        true_observation_1 = env_model.all_ground_truth_next_obs[data_counter+1]
-        true_obs_list.append(true_observation_1)
-
-        true_reward_list.append(env_model.all_actions_with_rewards[data_counter+2][2] * 1)
-        true_observation_2 = env_model.all_ground_truth_next_obs[data_counter+2]
-        true_obs_list.append(true_observation_2)
-
-        '''Here'''
-        single_torch_true_reward_list = torch.cuda.FloatTensor(true_reward_list).flatten()
-        single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
-
-        # print("\n",single_torch_tensor_pred_reward_list)
-        # print("\n", single_torch_tensor_pred_obs_list)
-        # print("\n",single_torch_true_reward_list)
-        # print("\n",single_torch_true_obs_list)
-        # time.sleep(1)
-
-        # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
-        # true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
-        # true_obs_list.append(torch.flatten(true_observation_1))
-        #
-        # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+2][2] * 1]))
-        # true_observation_2 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+2]])
-        # true_obs_list.append(torch.flatten(true_observation_2))
-
-        '''Convert all to proper cuda tensors'''
+            #del total_loss, reward_pred_loss, obs_pred_loss
 
 
+            #Update necesssary variables
+            data_counter += 1
 
-        #if data_counter%timesteps_before_each_update == 2: #At every step
-        optimizer.zero_grad()
-        '''Instead of MSE loss, using KL divergence.'''
-        # reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
-        # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
-        # tensor_of_prediction_reward_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_reward_list)).flatten()
-        #
-        # tensor_of_true_reward_list = (torch.cuda.FloatTensor(true_reward_list)).flatten()
+            #Save the model if necessary
+            if data_counter%1000 == 0:
+                print("Saving model now.")
+                torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' +str(epoch_counter)+'_'+ str(data_counter) + '.pth')
 
-        # print("prediction reward list: ", single_torch_tensor_pred_reward_list)
-        # print("\nprediction_observation_list",single_torch_tensor_pred_obs_list)
+        #Storing each epoch's cumulative loss
+        epoch_reward_loss_list.append(epoch_reward_loss_cumul)
+        epoch_obs_loss_list.append(epoch_obs_loss_cumul)
+        epoch_total_loss_list.append(epoch_total_loss_cumul)
 
+        np.savetxt("epoch_reward_loss_list.csv",np.array(epoch_reward_loss_list), delimiter=",")
+        np.savetxt("epoch_obs_loss_list.csv", np.array(epoch_obs_loss_list), delimiter=",")
+        np.savetxt("epoch_total_loss_list.csv", np.array(epoch_total_loss_list), delimiter=",")
 
-        # tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_obs_list)).flatten()
-        # tensor_of_true_obs_list = (torch.cuda.FloatTensor(true_obs_list)).flatten()
-
-        '''KL Divergence Loss'''
-        # reward_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_reward_list,
-        #                                     single_torch_true_reward_list, )
-        # obs_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_obs_list,
-        #                                          single_torch_true_obs_list, )
-        '''MSE Loss'''
-        reward_pred_loss = nn.functional.mse_loss(single_torch_tensor_pred_reward_list,
-                                                single_torch_true_reward_list )
-        obs_pred_loss = nn.functional.mse_loss(single_torch_tensor_pred_obs_list,
-                                             single_torch_true_obs_list )
-
-        '''reset all the lists and other variables here'''
-
-        total_loss = 10*reward_pred_loss + obs_pred_loss
-        print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
-        print("Total loss: ", str(total_loss))
-        print("Learning rate: ",str(scheduler.get_lr()))
-        #print("Calculating the gradients.")
-        total_loss.backward()
-        #print("Now, backpropagating.")
-        optimizer.step()
-        scheduler.step()
-
-        # true_rewards_list = []
-        # true_predictions_list = []
-        # env_model.rewards_list = []
-        # env_model.obs_prediction_list = []
-
-        del total_loss, reward_pred_loss, obs_pred_loss
-
-
-        #Update necesssary variables
-        data_counter += 1
-        '''Update the env_model obs'''
-        #env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
-        #env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+1],(1,1,150,150)))
-        #env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+2],(1,1,150,150)))
-
-        '''State updated in the reward func, need not do anything here.'''
-
-        #env_model.action_to_take_original = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])  # When data counter = 1, action to take from the file is 3
-        #env_model.velocity = env_model.action_to_take_original[0]
-        #env_model.delta = env_model.action_to_take_original[1]
-        #env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
-
-        #Save the model if necessary
-        if data_counter%100 == 0:
-            print("Saving model now.")
-            torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' + str(data_counter) + '.pth')
-
-
+        epoch_counter += 1
 
 
 
