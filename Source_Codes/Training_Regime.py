@@ -23,7 +23,11 @@ class Environment_Model_Architecture(nn.Module):
         self.transition_module = State_Transition_Module().to(device)
         self.obseration_and_reward_decoder = Decoder_Module().to(device)
 
-        self.next_state = 0 #Initially, nothing.
+        self.current_state = 0
+
+        self.next_state_0 = 0
+        self.next_state_1 = 0
+        self.next_state_2 = 0
 
         # Read the data set and move to cuda device
         print("Reading the files from the disk now.")
@@ -37,15 +41,31 @@ class Environment_Model_Architecture(nn.Module):
 
         #Reshape the observations to 4 dimensions
 
-        self.embedded_obs_1 = self.observation_encoder(self.obs_minus_2)
-        self.embedded_obs_2 = self.observation_encoder(self.obs_minus_1)
-        self.embedded_obs_3 = self.observation_encoder(self.obs_0)
-        self.action_to_take_original = torch.cuda.FloatTensor(self.all_actions_with_rewards[2]) #Start with the third action
-        self.velocity = self.action_to_take_original[0]
-        self.delta = self.action_to_take_original[1]
-        self.one_hot_action = action_one_hot_encoding(self.delta,self.velocity)
-        self.rewards_list = []
-        self.obs_prediction_list = []
+        self.embedded_obs_1 = 0
+        self.embedded_obs_2 = 0
+        self.embedded_obs_3 = 0
+
+        self.raw_action_0 = torch.cuda.FloatTensor(self.all_actions_with_rewards[2]) #Start with the third action
+        self.raw_action_1 = torch.cuda.FloatTensor(self.all_actions_with_rewards[3])
+        self.raw_action_2 = torch.cuda.FloatTensor(self.all_actions_with_rewards[4])
+
+        self.velocity_0 = self.raw_action_0[0]
+        self.delta_0 = self.raw_action_0[1]
+
+        self.velocity_1 = self.raw_action_1[0]
+        self.delta_1 = self.raw_action_1[1]
+
+        self.velocity_2 = self.raw_action_2[0]
+        self.delta_2 = self.raw_action_2[1]
+
+
+        self.one_hot_action_0 = action_one_hot_encoding(self.delta_0, self.velocity_0)
+        self.one_hot_action_1 = action_one_hot_encoding(self.delta_1, self.velocity_1)
+        self.one_hot_action_2 = action_one_hot_encoding(self.delta_2, self.velocity_2)
+
+
+        # self.rewards_list = []
+        # self.obs_prediction_list = []
 
 
 
@@ -57,11 +77,16 @@ class Environment_Model_Architecture(nn.Module):
         #Generate Initial State using the embeddings
         self.current_state = self.initial_state_generator(self.embedded_obs_1,self.embedded_obs_2,self.embedded_obs_3)
         #Get the next state
-        self.next_state = self.transition_module(self.current_state, self.one_hot_action)
+        self.next_state_0 = self.transition_module(self.current_state, self.one_hot_action_0)
         #decode the reward and the next observation for the action taken at current state
-        self.reward, self.obs_prediction = self.obseration_and_reward_decoder(self.next_state)
+        r_0,o_0 = self.obseration_and_reward_decoder(self.next_state_0)
+        self.next_state_1 = self.transition_module(self.next_state_0, self.one_hot_action_1) #------get all three actions to use here first here
+        r_1,o_1 = self.obseration_and_reward_decoder(self.next_state_1)
+        self.next_state_2 = self.transition_module(self.next_state_1, self.one_hot_action_2)
+        r_2,o_2 = self.obseration_and_reward_decoder(self.next_state_2)
 
-        return self.reward, self.obs_prediction
+
+        return r_0, o_0, r_1, o_1, r_2, o_2
 
       #'''Dont forget to set the current state to zero at the end of the last time step of each trajectory of length 3'''
 
@@ -126,30 +151,21 @@ if __name__ == "__main__":
     device = torch.cuda.current_device()
     print("Current cuda device is ", device)
 
-    # parser = argparse.ArgumentParser()
-    #
-    # parser.add_argument("--lr", default=0.003)
-    #
-    # args = parser.parse_args()
-    #lrate = args.lr
-
-    lrate = float(sys.argv[1])
-    print("The learning rate used is: ", lrate)
+    learning_rate = float(sys.argv[1])
+    print("The learning rate used is: ", learning_rate,".\n")
 
     env_model = Environment_Model_Architecture().to(device)
     print("Environment instance created.\n")
 
-    timesteps_before_each_update = 1
 
     #seed = 42
-   # torch.cuda.manual_seed(seed)
+    #torch.cuda.manual_seed(seed)
     #np.random.seed(seed)
 
-    data_counter = 2
+    data_counter = 2 #Should be 2, not 0.
 
 
 
-    true_rewards_list = []
     true_predictions_list = []
 
     #Set all none values from the env_model
@@ -158,10 +174,11 @@ if __name__ == "__main__":
     reward_loss_func = nn.MSELoss()
     obs_prediction_loss_func = nn.MSELoss()
 
-    optimizer = torch.optim.RMSprop(env_model.parameters(), lr=lrate)
+    optimizer = torch.optim.RMSprop(env_model.parameters(), lr=learning_rate)
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
-    print("Training starts. t = ",timesteps_before_each_update,"\n")
+
+
     while data_counter <= 19648:
         print("\nIteration: ", str(data_counter))
 
@@ -175,21 +192,52 @@ if __name__ == "__main__":
         env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-1],(1,1,150,150)))
         env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
         
-        env_model.action_to_take_original = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter])  # When data counter = 1, action to take from the file is 3
-        env_model.velocity = env_model.action_to_take_original[0]
-        env_model.delta = env_model.action_to_take_original[1]
-        env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
+        env_model.raw_action_0 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter])  # When data counter = 1, action to take from the file is 3
+        env_model.raw_action_1 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+1])
+        env_model.raw_action_2 = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])
 
-        predicted_reward_of_action_taken, predicted_next_obs = env_model.forward()
 
-        # env_model.rewards_list = env_model.rewards_list.append(copy.deepcopy(predicted_reward_of_action_taken))
-        # env_model.obs_prediction_list = env_model.obs_prediction_list.append(copy.deepcopy(predicted_next_obs))
+        env_model.velocity_0 = env_model.raw_action_0[0]
+        env_model.delta_0 = env_model.raw_action_0[1]
+        env_model.velocity_1 = env_model.raw_action_1[0]
+        env_model.delta_1 = env_model.raw_action_1[1]
+        env_model.velocity_2 = env_model.raw_action_2[0]
+        env_model.delta_2 = env_model.raw_action_2[1]
 
-        true_reward = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2]*1])
-        true_observation = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter]])
 
-        # true_rewards_list.append(env_model.all_actions_with_rewards[data_counter][1])
-        # true_predictions_list.append(env_model.all_ground_truth_next_obs[data_counter])
+
+        env_model.one_hot_action_0 = action_one_hot_encoding(env_model.delta_0, env_model.velocity_0)
+        env_model.one_hot_action_1 = action_one_hot_encoding(env_model.delta_1, env_model.velocity_1)
+        env_model.one_hot_action_2 = action_one_hot_encoding(env_model.delta_2, env_model.velocity_2)
+
+
+        prediction_reward_list = []
+        prediction_observation_list = []
+
+        true_reward_list = []
+        true_obs_list = []
+
+        reward_pred_loss_list = []
+        obs_pred_loss_list = []
+
+        r_1,o_1,r_2,o_2,r_3,o_3 = env_model.forward()
+        prediction_reward_list[0], prediction_observation_list[0] = r_1,o_1
+        prediction_reward_list[1], prediction_observation_list[1] = r_2,o_2
+        prediction_reward_list[2], prediction_observation_list[2] = r_3,o_3
+
+
+        true_reward_list[0] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2] * 1])
+        true_observation_0 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter]])
+        true_obs_list[0] = torch.flatten(true_observation_0)
+
+        true_reward_list[1] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1])
+        true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
+        true_obs_list[1] = torch.flatten(true_observation_1)
+
+        true_reward_list[2] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+2][2] * 1])
+        true_observation_2 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+2]])
+        true_obs_list[2] = torch.flatten(true_observation_2)
+
 
 
 
@@ -197,10 +245,12 @@ if __name__ == "__main__":
         optimizer.zero_grad()
 
         #reward_loss = reward_loss(env_model.rewards_list, true_rewards_list)
-        reward_pred_loss = reward_loss_func(predicted_reward_of_action_taken,true_reward)
+        reward_pred_loss = reward_loss_func(prediction_reward_list,true_reward_list)
         #obs_pred_loss = obs_prediction_loss_func(env_model.obs_prediction_list, true_predictions_list)
-        true_observation = torch.flatten(true_observation)
-        obs_pred_loss = obs_prediction_loss_func(predicted_next_obs, true_observation)
+        obs_pred_loss = obs_prediction_loss_func(prediction_observation_list, true_obs_list)
+
+
+        '''reset all the lists and other variables here'''
 
         total_loss = 0.1*reward_pred_loss + obs_pred_loss
         print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
