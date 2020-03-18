@@ -254,10 +254,10 @@ if __name__ == "__main__":
         single_torch_true_reward_list = torch.cuda.FloatTensor(true_reward_list).flatten()
         single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
 
-        print("\n",single_torch_tensor_pred_reward_list)
-        print("\n", single_torch_tensor_pred_obs_list)
-        print("\n",single_torch_true_reward_list)
-        print("\n",single_torch_true_obs_list)
+        # print("\n",single_torch_tensor_pred_reward_list)
+        # print("\n", single_torch_tensor_pred_obs_list)
+        # print("\n",single_torch_true_reward_list)
+        # print("\n",single_torch_true_obs_list)
         # time.sleep(3333)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
@@ -299,9 +299,9 @@ if __name__ == "__main__":
         print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
         print("Total loss: ", str(total_loss))
         print("Learning rate: ",str(scheduler.get_lr()))
-        print("Calculating the gradients.")
+        #print("Calculating the gradients.")
         total_loss.backward()
-        print("Now, backpropagating.")
+        #print("Now, backpropagating.")
         optimizer.step()
         scheduler.step()
 
