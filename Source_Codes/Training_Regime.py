@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     learning_rate = float(sys.argv[1])
 
-    loading_epoch_num = 0
+    loading_epoch_num = 1
     loading_iteration_num = 0
 
 
@@ -165,11 +165,9 @@ if __name__ == "__main__":
     print("Environment instance created.\n")
 
     if float(sys.argv[2]) == 1:
-        print("float(sys.argv[2]) is: ", float(sys.argv[2]))
         #Load the saved model parameters.
         loading_epoch_num = input("Which saved epoch num do you want to load?\n")
         loading_iteration_num = input("Which iteration num do you want to load?\n")
-
         print("Loading Saved Model from Epoch ", str(loading_epoch_num))
         print("Loading Saved Model from iteration count ", str(loading_iteration_num))
 
@@ -192,7 +190,6 @@ if __name__ == "__main__":
         print("Environment model parameters loaded from the saved model.")
 
     else:
-        print("float(sys.argv[2]) is ", float(sys.argv[2]))
         print("Not loading the env model from a pre-learned model.\n")
 
     #seed = 42
@@ -215,15 +212,17 @@ if __name__ == "__main__":
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
 
-    print("Loading epoch num is: ", loading_epoch_num)
-    if float(loading_epoch_num) == 1:
+    #print("Loading epoch num is: ", loading_epoch_num)
+    if float(loading_epoch_num) == 0:
         print("float(loading_epoch_num) is ",float(loading_epoch_num))
         epoch_counter = loading_epoch_num
-        print("Epoch to resume training from: ", epoch_counter)
+        print("Training will start from Epoch 0.")
+
     else:
         print("float(loading_epoch_num) is ", float(loading_epoch_num))
-        epoch_counter = 1
-        print("Training will start from Epoch 1.")
+        epoch_counter = loading_epoch_num
+        print("Epoch to resume training from: ", epoch_counter)
+
 
     epoch_reward_loss_list = []
     epoch_obs_loss_list = []
