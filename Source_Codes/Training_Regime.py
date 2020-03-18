@@ -3,6 +3,7 @@ import torch, numpy as np
 import torch.nn as nn, time
 from Neural_Blocks import State_Transition_Module, Observation_Encoder, Decoder_Module, Initial_State_Module
 import torch.nn.functional as F
+import torch.optim as optim
 from PIL import Image
 import os, os.path
 import matplotlib.pyplot as plt, copy
@@ -75,7 +76,8 @@ def get_training_data():
         ext = os.path.splitext(f)[1]
         if ext.lower() not in valid_images_format:
             continue
-        all_training_images.append(plt.imread(path+"img"+str(counter)+".png"))
+        img_t= plt.imread(path+"img"+str(counter)+".png") 
+        all_training_images.append(img_t)
         counter +=1
 
 
@@ -88,7 +90,8 @@ def get_training_data():
         ext = os.path.splitext(f)[1]
         if ext.lower() not in valid_images_format:
             continue
-        all_ground_truth_images.append(plt.imread(path+"img"+str(counter)+".png"))
+        img_r= plt.imread(path+"img"+str(counter)+".png")
+        all_ground_truth_images.append(img_r)
 
     #Read the actions and the corresponding rewards
     velocity_delta_reward = np.genfromtxt("../Data/Actions/train_data.csv", delimiter=",")
@@ -138,11 +141,11 @@ if __name__ == "__main__":
 
     timesteps_before_each_update = 1
 
-    seed = 42
-    torch.cuda.manual_seed(seed)
-    np.random.seed(seed)
+    #seed = 42
+   # torch.cuda.manual_seed(seed)
+    #np.random.seed(seed)
 
-    data_counter = 0
+    data_counter = 2
 
 
 
@@ -153,24 +156,36 @@ if __name__ == "__main__":
 
 
     reward_loss_func = nn.MSELoss()
-    obs_prediction_loss_func = nn.KLDivLoss()
+    obs_prediction_loss_func = nn.MSELoss()
 
     optimizer = torch.optim.RMSprop(env_model.parameters(), lr=lrate)
 
-
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
     print("Training starts. t = ",timesteps_before_each_update,"\n")
-    while data_counter <= 19650:
+    while data_counter <= 19648:
         print("\nIteration: ", str(data_counter))
 
         #env_model.obs_minus_2, env_model.obs_minus_1, env_model.obs_0 = torch.FloatTensor(env_model.all_obs[data_counter].reshape()), torch.FloatTensor(env_model.all_obs[data_counter+1]), torch.FloatTensor(env_model.all_obs[data_counter+2])
         #env_model.action_to_take = torch.FloatTensor(np.array(env_model.all_actions_with_rewards[data_counter][0]))
+
+        #Update necesssary variables
+      
+        '''Update the env_model obs'''
+        env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-2],(1,1,150,150)))
+        env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter-1],(1,1,150,150)))
+        env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
+        
+        env_model.action_to_take_original = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter])  # When data counter = 1, action to take from the file is 3
+        env_model.velocity = env_model.action_to_take_original[0]
+        env_model.delta = env_model.action_to_take_original[1]
+        env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
 
         predicted_reward_of_action_taken, predicted_next_obs = env_model.forward()
 
         # env_model.rewards_list = env_model.rewards_list.append(copy.deepcopy(predicted_reward_of_action_taken))
         # env_model.obs_prediction_list = env_model.obs_prediction_list.append(copy.deepcopy(predicted_next_obs))
 
-        true_reward = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2]])
+        true_reward = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2]*1])
         true_observation = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter]])
 
         # true_rewards_list.append(env_model.all_actions_with_rewards[data_counter][1])
@@ -187,12 +202,15 @@ if __name__ == "__main__":
         true_observation = torch.flatten(true_observation)
         obs_pred_loss = obs_prediction_loss_func(predicted_next_obs, true_observation)
 
-        total_loss = reward_pred_loss + obs_pred_loss
+        total_loss = 0.1*reward_pred_loss + obs_pred_loss
+        print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
         print("Total loss: ", str(total_loss))
+        print("Learning rate: ",str(scheduler.get_lr()))
         print("Calculating the gradients.")
         total_loss.backward()
         print("Now, backpropagating.")
         optimizer.step()
+        scheduler.step()
 
         # true_rewards_list = []
         # true_predictions_list = []
@@ -205,16 +223,16 @@ if __name__ == "__main__":
         #Update necesssary variables
         data_counter += 1
         '''Update the env_model obs'''
-        env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
-        env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+1],(1,1,150,150)))
-        env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+2],(1,1,150,150)))
+        #env_model.obs_minus_2 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter],(1,1,150,150)))
+        #env_model.obs_minus_1 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+1],(1,1,150,150)))
+        #env_model.obs_0 = torch.cuda.FloatTensor(np.reshape(env_model.all_obs[data_counter+2],(1,1,150,150)))
 
         '''State updated in the reward func, need not do anything here.'''
 
-        env_model.action_to_take_original = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])  # When data counter = 1, action to take from the file is 3
-        env_model.velocity = env_model.action_to_take_original[0]
-        env_model.delta = env_model.action_to_take_original[1]
-        env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
+        #env_model.action_to_take_original = torch.cuda.FloatTensor(env_model.all_actions_with_rewards[data_counter+2])  # When data counter = 1, action to take from the file is 3
+        #env_model.velocity = env_model.action_to_take_original[0]
+        #env_model.delta = env_model.action_to_take_original[1]
+        #env_model.one_hot_action = action_one_hot_encoding(env_model.delta, env_model.velocity)
 
         #Save the model if necessary
         if data_counter%100 == 0:
