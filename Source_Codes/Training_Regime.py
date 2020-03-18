@@ -223,7 +223,7 @@ if __name__ == "__main__":
         epoch_obs_loss_cumul = 0
         epoch_total_loss_cumul = 0
 
-        while data_counter <= 10:
+        while data_counter <= 19648:
             print("\nIteration: ", str(data_counter))
 
             #Update necesssary variables
@@ -296,9 +296,9 @@ if __name__ == "__main__":
             epoch_obs_loss_cumul += obs_pred_loss.data
             epoch_total_loss_cumul += total_loss.data
 
-            print("Reward loss: ",str(reward_pred_loss) ,"\tObservation Loss: ",str(obs_pred_loss))
-            print("Total loss: ", str(total_loss))
-            print("Learning rate: ",str(scheduler.get_lr()))
+            # print("Reward loss: ",str(reward_pred_loss) ,"\tObservation Loss: ",str(obs_pred_loss))
+            # print("Total loss: ", str(total_loss))
+            # print("Learning rate: ",str(scheduler.get_lr()))
             total_loss.backward()
             optimizer.step()
             #scheduler.step()
