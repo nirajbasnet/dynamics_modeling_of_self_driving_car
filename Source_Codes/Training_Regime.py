@@ -321,6 +321,11 @@ if __name__ == "__main__":
         epoch_obs_loss_list.append(epoch_obs_loss_cumul)
         epoch_total_loss_list.append(epoch_total_loss_cumul)
 
+        print("Epoch_reward_loss_cumul: ", epoch_reward_loss_cumul)
+        print("Epoch_obs_loss_cumul: ", epoch_obs_loss_cumul)
+        print("Epoch_total_loss_cumul: ", epoch_total_loss_cumul)
+
+
         np.savetxt("epoch_reward_loss_list.csv",np.array(epoch_reward_loss_list), delimiter=",")
         np.savetxt("epoch_obs_loss_list.csv", np.array(epoch_obs_loss_list), delimiter=",")
         np.savetxt("epoch_total_loss_list.csv", np.array(epoch_total_loss_list), delimiter=",")
