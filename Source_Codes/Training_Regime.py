@@ -255,11 +255,11 @@ if __name__ == "__main__":
         single_torch_true_reward_list = torch.cuda.FloatTensor(true_reward_list).flatten()
         single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
 
-        print("\n",single_torch_tensor_pred_reward_list)
-        print("\n", single_torch_tensor_pred_obs_list)
-        print("\n",single_torch_true_reward_list)
-        print("\n",single_torch_true_obs_list)
-        time.sleep(1)
+        # print("\n",single_torch_tensor_pred_reward_list)
+        # print("\n", single_torch_tensor_pred_obs_list)
+        # print("\n",single_torch_true_reward_list)
+        # print("\n",single_torch_true_obs_list)
+        # time.sleep(1)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
         # true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
@@ -302,7 +302,7 @@ if __name__ == "__main__":
 
         '''reset all the lists and other variables here'''
 
-        total_loss = 10 * reward_pred_loss + obs_pred_loss
+        total_loss = 0.1 * reward_pred_loss + obs_pred_loss
         print("Reward loss: ",str(reward_pred_loss) ," Obs loss: ",str(obs_pred_loss))
         print("Total loss: ", str(total_loss))
         print("Learning rate: ",str(scheduler.get_lr()))
