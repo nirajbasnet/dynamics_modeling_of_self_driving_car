@@ -295,10 +295,10 @@ if __name__ == "__main__":
         # obs_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_obs_list,
         #                                          single_torch_true_obs_list, )
         '''MSE Loss'''
-        reward_pred_loss = nn.MSELoss(single_torch_tensor_pred_reward_list,
-                                                single_torch_true_reward_list, )
-        obs_pred_loss = nn.MSELoss(single_torch_tensor_pred_obs_list,
-                                             single_torch_true_obs_list, )
+        reward_pred_loss = nn.functional.mse_loss(single_torch_tensor_pred_reward_list,
+                                                single_torch_true_reward_list )
+        obs_pred_loss = nn.functional.mse_loss(single_torch_tensor_pred_obs_list,
+                                             single_torch_true_obs_list )
 
         '''reset all the lists and other variables here'''
 
