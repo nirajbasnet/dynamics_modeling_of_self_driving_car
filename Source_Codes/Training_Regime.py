@@ -1,5 +1,6 @@
 # Created by Aashish Adhikari at 2:31 PM 3/15/2020
 import torch, numpy as np
+torch.cuda.empty_cache()
 import torch.nn as nn, time
 from Neural_Blocks import State_Transition_Module, Observation_Encoder, Decoder_Module, Initial_State_Module
 import torch.nn.functional as F
@@ -243,11 +244,11 @@ if __name__ == "__main__":
         true_obs_list.append(true_observation_0)
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter+1][2] * 1)
-        true_observation_1 = env_model.all_ground_truth_next_obs[data_counter]
+        true_observation_1 = env_model.all_ground_truth_next_obs[data_counter+1]
         true_obs_list.append(true_observation_1)
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter+2][2] * 1)
-        true_observation_2 = env_model.all_ground_truth_next_obs[data_counter]
+        true_observation_2 = env_model.all_ground_truth_next_obs[data_counter+2]
         true_obs_list.append(true_observation_2)
 
         '''Here'''
