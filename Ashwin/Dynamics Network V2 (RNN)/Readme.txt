@@ -1,2 +1,1 @@
-1. Read the demo python script. Its super simple to understand.
-2. If you want to train your own model, please check out lines 10-90 of the training python script. You can change the hyperpramaeters and the neural network structure itself.
+
