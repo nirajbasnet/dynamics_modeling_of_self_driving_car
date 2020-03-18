@@ -230,22 +230,26 @@ if __name__ == "__main__":
         prediction_observation_list.append(o_2)
         prediction_observation_list.append(o_3)
 
-        print(prediction_reward_list)
-        print("n",prediction_observation_list)
-        time.sleep(3333)
+
 
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter][2] * 1)
         true_observation_0 = env_model.all_ground_truth_next_obs[data_counter]
-        true_obs_list.append(true_observation_0.flatten())
+        true_obs_list.append(true_observation_0)
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter+1][2] * 1)
         true_observation_1 = env_model.all_ground_truth_next_obs[data_counter]
-        true_obs_list.append(true_observation_1.flatten())
+        true_obs_list.append(true_observation_1)
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter+2][2] * 1)
         true_observation_2 = env_model.all_ground_truth_next_obs[data_counter]
         true_obs_list.append(true_observation_2.flatten())
+
+        print("\n",prediction_reward_list)
+        print("\n", prediction_observation_list)
+        print("\n",true_reward_list)
+        print("\n",true_obs_list)
+        time.sleep(3333)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
         # true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
