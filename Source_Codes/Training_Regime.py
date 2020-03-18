@@ -154,8 +154,8 @@ if __name__ == "__main__":
 
     learning_rate = float(sys.argv[1])
 
-
-
+    loading_epoch_num = 0
+    loading_iteration_num = 0
 
 
     print("The learning rate used is: ", learning_rate,".\n")
@@ -209,7 +209,10 @@ if __name__ == "__main__":
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
 
-    epoch_counter = 1
+    if sys.argv[2] == 1:
+        epoch_counter = loading_epoch_num
+    else:
+        epoch_counter = 1
 
     epoch_reward_loss_list = []
     epoch_obs_loss_list = []
