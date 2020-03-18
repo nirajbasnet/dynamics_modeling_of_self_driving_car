@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
         data_counter = 0
 
-        while data_counter <= 19648:
+        while data_counter <= 17495:
             if data_counter%1000 == 0:
                 print("\nIteration num in Epoch: ", str(data_counter))
 
