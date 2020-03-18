@@ -264,7 +264,6 @@ if __name__ == "__main__":
 
         print("prediction reward list: ", prediction_reward_list)
         print("\nprediction_observation_list",prediction_observation_list)
-        print(prediction_reward_list.dtype, prediction_observation_list.dtype)
 
 
         tensor_of_prediction_observation_list = torch.cuda.FloatTensor(prediction_observation_list)
