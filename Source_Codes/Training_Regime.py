@@ -224,7 +224,8 @@ if __name__ == "__main__":
         epoch_total_loss_cumul = 0
 
         while data_counter <= 19648:
-            print("\nIterationn: ", str(data_counter))
+            if data_counter%1000 == 0:
+                print("\nIteration num in Epoch: ", str(data_counter))
 
             #Update necesssary variables
             '''Update the env_model obs'''
