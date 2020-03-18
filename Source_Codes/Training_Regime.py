@@ -168,6 +168,9 @@ if __name__ == "__main__":
         loading_epoch_num = input("Which saved epoch num do you want to load?\n")
         loading_iteration_num = input("Which iteration num do you want to load?\n")
 
+        print("Loading Saved Model from Epoch ", str(loading_epoch_num))
+        print("Loading Saved Model from iteration count ", str(loading_iteration_num))
+
 
         saved_state_statistics_of_the_model = torch.load('../Saved_Models/Env_Model_'+str(loading_epoch_num)+'_'+str(loading_iteration_num)+ '.pth')
         # for keyname_of_the_state_statistic in saved_state_statistics_of_the_model:
@@ -209,7 +212,7 @@ if __name__ == "__main__":
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
 
-    if sys.argv[2] == 1:
+    if loading_epoch_num != 0:
         epoch_counter = loading_epoch_num
         print("Epoch to resume training from: ", epoch_counter)
     else:
