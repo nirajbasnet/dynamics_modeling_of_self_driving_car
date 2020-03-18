@@ -220,13 +220,13 @@ if __name__ == "__main__":
     #print("Loading epoch num is: ", loading_epoch_num)
     if float(loading_epoch_num) == 0:
         print("float(loading_epoch_num) is ",float(loading_epoch_num))
-        epoch_counter = loading_epoch_num
+        epoch_counter = int(loading_epoch_num)
         print("Training will start from Epoch 0.")
 
     else:
         print("float(loading_epoch_num) is ", float(loading_epoch_num))
-        epoch_counter = loading_epoch_num
-        print("Epoch to resume training from: ", epoch_counter)
+        epoch_counter = int(loading_epoch_num)
+        print("Epoch to resume training from: ", str(epoch_counter))
 
 
     epoch_reward_loss_list = []
@@ -235,7 +235,7 @@ if __name__ == "__main__":
 
     while True:
 
-        print("\nEpoch num: ", epoch_counter)
+        print("\nEpoch num: ", str(epoch_counter))
 
         epoch_reward_loss_cumul = 0
         epoch_obs_loss_cumul = 0
@@ -354,7 +354,7 @@ if __name__ == "__main__":
         np.savetxt("epoch_obs_loss_list.csv", np.array(epoch_obs_loss_list), delimiter=",")
         np.savetxt("epoch_total_loss_list.csv", np.array(epoch_total_loss_list), delimiter=",")
 
-        epoch_counter += 1
+        epoch_counter = int(epoch_counter) +  1
 
 
 
