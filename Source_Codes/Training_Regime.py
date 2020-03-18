@@ -211,8 +211,8 @@ if __name__ == "__main__":
         env_model.one_hot_action_2 = action_one_hot_encoding(env_model.delta_2, env_model.velocity_2)
 
 
-        prediction_reward_list = []
-        prediction_observation_list = []
+        # prediction_reward_list = []
+        # prediction_observation_list = []
 
         true_reward_list = []
         true_obs_list = []
@@ -222,13 +222,18 @@ if __name__ == "__main__":
 
         r_1,o_1,r_2,o_2,r_3,o_3 = env_model.forward()
 
-        prediction_reward_list.append(r_1)
-        prediction_reward_list.append(r_2)
-        prediction_reward_list.append(r_3)
+        # prediction_reward_list.append(r_1)
+        # prediction_reward_list.append(r_2)
+        # prediction_reward_list.append(r_3)
+        # prediction_observation_list.append(o_1)
+        # prediction_observation_list.append(o_2)
+        # prediction_observation_list.append(o_3)
 
-        prediction_observation_list.append(o_1)
-        prediction_observation_list.append(o_2)
-        prediction_observation_list.append(o_3)
+        '''Here'''
+        single_torch_tensor_pred_reward_list = torch.cat((r_1,r_2,r_3), dim=0)
+        single_torch_tensor_pred_obs_list = torch.cat((o_1, o_2, o_3), dim=0)
+
+
 
 
 
@@ -245,10 +250,14 @@ if __name__ == "__main__":
         true_observation_2 = env_model.all_ground_truth_next_obs[data_counter]
         true_obs_list.append(true_observation_2.flatten())
 
-        print("\n",prediction_reward_list)
-        print("\n", prediction_observation_list)
-        print("\n",true_reward_list)
-        print("\n",true_obs_list)
+        '''Here'''
+        single_torch_true_reward_list = torch.cuda.FloatTensor(true_obs_list)
+        single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list)
+
+        print("\n",single_torch_tensor_pred_reward_list)
+        print("\n", single_torch_tensor_pred_obs_list)
+        print("\n",single_torch_true_reward_list)
+        print("\n",single_torch_true_obs_list)
         time.sleep(3333)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
@@ -259,6 +268,7 @@ if __name__ == "__main__":
         # true_observation_2 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+2]])
         # true_obs_list.append(torch.flatten(true_observation_2))
 
+        '''Convert all to proper cuda tensors'''
 
 
 
@@ -267,15 +277,15 @@ if __name__ == "__main__":
         '''Instead of MSE loss, using KL divergence.'''
         # reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
         # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
-        tensor_of_prediction_reward_list = (torch.cuda.FloatTensor(prediction_reward_list)).flatten()
+        tensor_of_prediction_reward_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_reward_list)).flatten()
 
         tensor_of_true_reward_list = (torch.cuda.FloatTensor(true_reward_list)).flatten()
 
-        print("prediction reward list: ", prediction_reward_list)
-        print("\nprediction_observation_list",prediction_observation_list)
+        print("prediction reward list: ", single_torch_tensor_pred_reward_list)
+        print("\nprediction_observation_list",single_torch_tensor_pred_obs_list)
 
 
-        tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(prediction_observation_list)).flatten()
+        tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_obs_list)).flatten()
         tensor_of_true_obs_list = (torch.cuda.FloatTensor(true_obs_list)).flatten()
 
         reward_pred_loss = nn.functional.kl_div(tensor_of_prediction_reward_list,
