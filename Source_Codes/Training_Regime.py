@@ -251,11 +251,15 @@ if __name__ == "__main__":
         '''Instead of MSE loss, using KL divergence.'''
         # reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
         # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
+        tensor_of_prediction_reward_list = torch.cuda.FloatTensor(prediction_reward_list)
+        tensor_of_true_reward_list = torch.cuda.FloatTensor(true_reward_list)
+        tensor_of_prediction_observation_list = torch.cuda.FloatTensor(prediction_observation_list)
+        tensor_of_true_obs_list = torch.cuda.FloatTensor(true_obs_list)
 
-        reward_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_reward_list),
-                                            torch.cuda.FloatTensor(true_reward_list), size_average=True)
-        obs_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_observation_list),
-                                                 torch.cuda.FloatTensor(true_obs_list), size_average=True)
+        reward_pred_loss = nn.functional.kl_div(tensor_of_prediction_reward_list,
+                                            tensor_of_true_reward_list, )
+        obs_pred_loss = nn.functional.kl_div(tensor_of_prediction_observation_list,
+                                                 tensor_of_true_obs_list, )
 
         '''reset all the lists and other variables here'''
 
