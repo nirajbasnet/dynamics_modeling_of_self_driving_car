@@ -222,13 +222,17 @@ if __name__ == "__main__":
 
         r_1,o_1,r_2,o_2,r_3,o_3 = env_model.forward()
 
-        prediction_reward_list.append(r_1)
-        prediction_reward_list.append(r_2)
-        prediction_reward_list.append(r_3)
+        prediction_reward_list.append(r_1.data)
+        prediction_reward_list.append(r_2.data)
+        prediction_reward_list.append(r_3.data)
 
-        prediction_observation_list.append(o_1)
-        prediction_observation_list.append(o_2)
-        prediction_observation_list.append(o_3)
+        prediction_observation_list.append(o_1.flatten().data)
+        prediction_observation_list.append(o_2.flatten().data)
+        prediction_observation_list.append(o_3.flatten().data)
+
+        print(prediction_reward_list)
+        print("n",prediction_observation_list)
+        time.sleep(3333)
 
 
         true_reward_list.append(env_model.all_actions_with_rewards[data_counter][2] * 1)
