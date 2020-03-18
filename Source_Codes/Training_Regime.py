@@ -251,13 +251,13 @@ if __name__ == "__main__":
         true_obs_list.append(true_observation_2)
 
         '''Here'''
-        single_torch_true_reward_list = torch.cuda.FloatTensor(true_obs_list).flatten()
+        single_torch_true_reward_list = torch.cuda.FloatTensor(true_reward_list).flatten()
         single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
 
-        # print("\n",single_torch_tensor_pred_reward_list)
-        # print("\n", single_torch_tensor_pred_obs_list)
-        # print("\n",single_torch_true_reward_list)
-        # print("\n",single_torch_true_obs_list)
+        print("\n",single_torch_tensor_pred_reward_list)
+        print("\n", single_torch_tensor_pred_obs_list)
+        print("\n",single_torch_true_reward_list)
+        print("\n",single_torch_true_obs_list)
         # time.sleep(3333)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
