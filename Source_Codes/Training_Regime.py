@@ -254,11 +254,11 @@ if __name__ == "__main__":
         single_torch_true_reward_list = torch.cuda.FloatTensor(true_obs_list).flatten()
         single_torch_true_obs_list = torch.cuda.FloatTensor(true_obs_list).flatten()
 
-        print("\n",single_torch_tensor_pred_reward_list)
-        print("\n", single_torch_tensor_pred_obs_list)
-        print("\n",single_torch_true_reward_list)
-        print("\n",single_torch_true_obs_list)
-        time.sleep(3333)
+        # print("\n",single_torch_tensor_pred_reward_list)
+        # print("\n", single_torch_tensor_pred_obs_list)
+        # print("\n",single_torch_true_reward_list)
+        # print("\n",single_torch_true_obs_list)
+        # time.sleep(3333)
 
         # true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
         # true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
@@ -277,21 +277,21 @@ if __name__ == "__main__":
         '''Instead of MSE loss, using KL divergence.'''
         # reward_pred_loss = reward_loss_func(torch.cuda.FloatTensor(prediction_reward_list),torch.cuda.FloatTensor(true_reward_list))
         # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
-        tensor_of_prediction_reward_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_reward_list)).flatten()
+        # tensor_of_prediction_reward_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_reward_list)).flatten()
+        #
+        # tensor_of_true_reward_list = (torch.cuda.FloatTensor(true_reward_list)).flatten()
 
-        tensor_of_true_reward_list = (torch.cuda.FloatTensor(true_reward_list)).flatten()
-
-        print("prediction reward list: ", single_torch_tensor_pred_reward_list)
-        print("\nprediction_observation_list",single_torch_tensor_pred_obs_list)
+        # print("prediction reward list: ", single_torch_tensor_pred_reward_list)
+        # print("\nprediction_observation_list",single_torch_tensor_pred_obs_list)
 
 
-        tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_obs_list)).flatten()
-        tensor_of_true_obs_list = (torch.cuda.FloatTensor(true_obs_list)).flatten()
+        # tensor_of_prediction_observation_list = (torch.cuda.FloatTensor(single_torch_tensor_pred_obs_list)).flatten()
+        # tensor_of_true_obs_list = (torch.cuda.FloatTensor(true_obs_list)).flatten()
 
-        reward_pred_loss = nn.functional.kl_div(tensor_of_prediction_reward_list,
-                                            tensor_of_true_reward_list, )
-        obs_pred_loss = nn.functional.kl_div(tensor_of_prediction_observation_list,
-                                                 tensor_of_true_obs_list, )
+        reward_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_reward_list,
+                                            single_torch_true_reward_list, )
+        obs_pred_loss = nn.functional.kl_div(single_torch_tensor_pred_obs_list,
+                                                 single_torch_true_obs_list, )
 
         '''reset all the lists and other variables here'''
 
