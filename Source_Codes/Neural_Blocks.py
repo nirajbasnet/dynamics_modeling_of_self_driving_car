@@ -4,9 +4,10 @@
 import torch.nn as nn, time, torch
 import numpy as np
 
-#device = torch.cuda.current_device()
 device = torch.device('cuda:1')
+torch.cuda.set_device(device)
 
+print("cuda device isss ", device)
 
 class Conv_Stack(nn.Module):
 

@@ -10,8 +10,9 @@ import os, os.path
 import matplotlib.pyplot as plt, copy
 import argparse, sys
 
-#device = torch.cuda.current_device()
 device = torch.device('cuda:1')
+torch.cuda.set_device(device)
+print("cuda device is: ", device)
 
 
 possible_velocity = [0.5,0.75,1,1.25,1.5]
