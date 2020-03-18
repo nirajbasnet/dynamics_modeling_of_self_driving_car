@@ -211,8 +211,10 @@ if __name__ == "__main__":
 
     if sys.argv[2] == 1:
         epoch_counter = loading_epoch_num
+        print("Epoch to resume training from: ", epoch_counter)
     else:
         epoch_counter = 1
+        print("Training will start from Epoch 1.")
 
     epoch_reward_loss_list = []
     epoch_obs_loss_list = []
