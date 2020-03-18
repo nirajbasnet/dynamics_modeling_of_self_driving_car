@@ -253,9 +253,9 @@ if __name__ == "__main__":
         # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
 
         reward_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_reward_list),
-                                            torch.cuda.FloatTensor(true_reward_list))
+                                            torch.cuda.FloatTensor(true_reward_list), size_average=True)
         obs_pred_loss = nn.functional.kl_div(torch.cuda.FloatTensor(prediction_observation_list),
-                                                 torch.cuda.FloatTensor(true_obs_list))
+                                                 torch.cuda.FloatTensor(true_obs_list), size_average=True)
 
         '''reset all the lists and other variables here'''
 
