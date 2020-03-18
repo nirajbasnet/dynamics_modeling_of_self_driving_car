@@ -293,6 +293,9 @@ if __name__ == "__main__":
             total_loss = 10*reward_pred_loss + obs_pred_loss
 
             #VVI to take only the data to avoid storing the gradients
+            '''By just using loss.data, you would not run into the “keeping track over everything” problem 
+            (which would happen if you use loss and something is not volatile). Using loss.data means you would still get a tensor
+             instead of just a python number but you won't be keeping track unnecessarily now while appending to the loss list.'''
             epoch_reward_loss_cumul += reward_pred_loss.data
             epoch_obs_loss_cumul += obs_pred_loss.data
             epoch_total_loss_cumul += total_loss.data
