@@ -149,7 +149,8 @@ if __name__ == "__main__":
 
     torch.cuda.empty_cache()
     print("Total cuda-supporting devices count is ", torch.cuda.device_count())
-    device = torch.cuda.current_device()
+    #device = torch.cuda.current_device()
+    device = torch.device('cuda:1')
     print("Current cuda device is ", device)
 
     learning_rate = float(sys.argv[1])
