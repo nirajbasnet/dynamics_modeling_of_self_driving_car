@@ -313,7 +313,7 @@ if __name__ == "__main__":
 
             #Save the model if necessary
             if data_counter%1000 == 0:
-		print("Reward loss: ",str(reward_pred_loss.data),"\tObservation Loss: ",str(obs_pred_loss.data),"\tTotal Loss: ",str(total_loss.data))
+                print("Reward loss: ",str(reward_pred_loss.data),"\tObservation Loss: ",str(obs_pred_loss.data),"\tTotal Loss: ",str(total_loss.data))
                 print("Saving model now.")
                 torch.save(env_model.state_dict(), '../Saved_Models/Env_Model_' +str(epoch_counter)+'_'+ str(data_counter) + '.pth')
 
