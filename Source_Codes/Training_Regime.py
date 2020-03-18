@@ -213,6 +213,7 @@ if __name__ == "__main__":
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000,gamma=0.7)
 
+    print("Loading epoch num is: ", loading_epoch_num)
     if loading_epoch_num != 0:
         epoch_counter = loading_epoch_num
         print("Epoch to resume training from: ", epoch_counter)
