@@ -253,6 +253,12 @@ if __name__ == "__main__":
         # obs_pred_loss = obs_prediction_loss_func(torch.cuda.FloatTensor(prediction_observation_list), torch.cuda.FloatTensor(true_obs_list))
         tensor_of_prediction_reward_list = torch.cuda.FloatTensor(prediction_reward_list)
         tensor_of_true_reward_list = torch.cuda.FloatTensor(true_reward_list)
+
+        print("prediction reward list: ", prediction_reward_list)
+        prediction_observation_list("\nprediction_observation_list",prediction_observation_list)
+        prediction_reward_list(prediction_reward_list.dtype, prediction_observation_list.dtype)
+        time.sleep(3333)
+
         tensor_of_prediction_observation_list = torch.cuda.FloatTensor(prediction_observation_list)
         tensor_of_true_obs_list = torch.cuda.FloatTensor(true_obs_list)
 
