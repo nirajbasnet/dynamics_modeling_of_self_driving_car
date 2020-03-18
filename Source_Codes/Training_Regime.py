@@ -221,22 +221,27 @@ if __name__ == "__main__":
         obs_pred_loss_list = []
 
         r_1,o_1,r_2,o_2,r_3,o_3 = env_model.forward()
-        prediction_reward_list[0], prediction_observation_list[0] = r_1,o_1
-        prediction_reward_list[1], prediction_observation_list[1] = r_2,o_2
-        prediction_reward_list[2], prediction_observation_list[2] = r_3,o_3
+
+        prediction_reward_list.append(r_1)
+        prediction_reward_list.append(r_2)
+        prediction_reward_list.append(r_3)
+
+        prediction_observation_list.append(o_1)
+        prediction_observation_list.append(o_2)
+        prediction_observation_list.append(o_3)
 
 
-        true_reward_list[0] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2] * 1])
+        true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter][2] * 1]))
         true_observation_0 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter]])
-        true_obs_list[0] = torch.flatten(true_observation_0)
+        true_obs_list.append(torch.flatten(true_observation_0))
 
-        true_reward_list[1] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1])
+        true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+1][2] * 1]))
         true_observation_1 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+1]])
-        true_obs_list[1] = torch.flatten(true_observation_1)
+        true_obs_list.append(torch.flatten(true_observation_1))
 
-        true_reward_list[2] = torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+2][2] * 1])
+        true_reward_list.append(torch.cuda.FloatTensor([env_model.all_actions_with_rewards[data_counter+2][2] * 1]))
         true_observation_2 = torch.cuda.FloatTensor([env_model.all_ground_truth_next_obs[data_counter+2]])
-        true_obs_list[2] = torch.flatten(true_observation_2)
+        true_obs_list.append(torch.flatten(true_observation_2))
 
 
 
