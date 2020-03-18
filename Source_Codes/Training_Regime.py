@@ -223,6 +223,8 @@ if __name__ == "__main__":
         epoch_obs_loss_cumul = 0
         epoch_total_loss_cumul = 0
 
+        data_counter = 0
+
         while data_counter <= 19648:
             if data_counter%1000 == 0:
                 print("\nIteration num in Epoch: ", str(data_counter))
@@ -290,7 +292,7 @@ if __name__ == "__main__":
                                                    single_torch_true_obs_list)
 
 
-            total_loss = 10*reward_pred_loss + obs_pred_loss
+            total_loss = 0.1*reward_pred_loss + obs_pred_loss
 
             #VVI to take only the data to avoid storing the gradients
             '''By just using loss.data, you would not run into the “keeping track over everything” problem 
