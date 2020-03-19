@@ -14,8 +14,9 @@ possible_velocity = [0.5,0.75,1,1.25,1.5]
 possible_deltas = [-0.4188, -0.36652, -0.31416, -0.2618, -0.20944, -0.157080, -0.10472, -0.05236, 0, 0.05236, 0.10472, 0.15708, 0.20944, 0.2618, 0.31416, 0.36652, 0.4188]
 # one_hot_velocity = torch.nn.functional.one_hot(torch.cuda.FloatTensor(possible_velocity))
 # one_hot_deltas = torch.nn.functional.one_hot(torch.cuda.FloatTensor(possible_deltas))
-
-
+ 
+device = torch.device("cuda:1")
+torch.cuda.set_device(device)
 class Environment_Model_Architecture(nn.Module):
     def __init__(self):
         super(Environment_Model_Architecture, self).__init__()

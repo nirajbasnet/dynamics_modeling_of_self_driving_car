@@ -8,7 +8,9 @@ import torch
 import matplotlib.pyplot as plt
 from torch import nn
 import pickle
+import Neural_Blocks
 from Neural_Blocks import State_Transition_Module, Observation_Encoder, Decoder_Module, Initial_State_Module
+import Training_Regime
 from Training_Regime import Environment_Model_Architecture
 
 
@@ -69,6 +71,7 @@ class DeepCEM:
     def __init__(self,device):
         self.n_steer = 17
         self.n_vel = 5
+        torch.cuda.empty_cache()
         self.total_actions = self.n_steer * self.n_vel
         self.velocity_range = [0.5, 0.75, 1.0, 1.25, 1.5]  #unitL: m/s
         self.min_steering_angle = -0.4188   #unit: radians. Equivalent to -24 degrees
@@ -83,35 +86,36 @@ class DeepCEM:
         self.load_environment_model()
 
         #Deep MLP module
-        self.net = NeuralNetClassifier(
-            MLP_module,
-            max_epochs=20,
-            lr=self.lrate,
-            iterator_train__shuffle=False,
-        )
+        # self.net = NeuralNetClassifier(
+        #     MLP_module,
+        #     max_epochs=20,
+        #     lr=self.lrate,
+        #     iterator_train__shuffle=False,
+        # )
+        self.net = None
         #Deep CNN module
         self.cnet = NeuralNetClassifier(
             CNN_ClassifierModule,
             max_epochs=30,
             lr=self.lrate,
             device=self.device,
-            optimizer=torch.optim.Adam,
+            optimizer=torch.optim.SGD,
         )
 
-        self.reset_state_sim = plt.imread("./track/img2.png")
+        self.reset_state_sim = plt.imread("../Data/img2.png")
         self.cnet.initialize_module()
-        self.net.initialize_module()
+        # self.net.initialize_module()
 
         #Training related variables
         self.NN_MODULE_TYPE = 'deepCNN'   #'deepMLP' and 'deepCNN
-        self.N_SESSIONS = 100
-        self.N_TSTEPS_HORIZON = 25
+        self.N_SESSIONS = 150
+        self.N_TSTEPS_HORIZON = 50
         self.ELITE_PERCENTILE = 70
         self.N_GENERATIONS = 100
         self.log=[]
         self.FIRST_RUN = False
 
-        # self.train_CEM()
+        self.train_CEM()
 
     def load_environment_model(self):
 
@@ -136,6 +140,7 @@ class DeepCEM:
 
         '''load these new parameters onto your new model'''
         self.env_model.load_state_dict(new_model_statistics_dictionary)
+        self.env_model.eval()
         print("Environment model parameters loaded from the saved model.")
 
     def get_reset_state(self):
@@ -210,16 +215,17 @@ class DeepCEM:
         probs= None
         sampled_action=None
         time_penalty = 0.1
+
         current_state = self.get_reset_state()   #reset environment before generating sessions
+        current_state_tensor = torch.cuda.FloatTensor(np.reshape(current_state,(1,1,150,150))) 
         for t in range(t_max):
             try:
                 # use agent to predict a vector of action probabilities for state s
-                curent_state_tensor = torch.tensor(current_state.reshape(1, 1, 150, 150))
                 if not self.FIRST_RUN:
                     if self.NN_MODULE_TYPE =='deepCNN':
-                        probs = self.cnet.predict_proba(curent_state_tensor)
+                        probs = self.cnet.predict_proba(current_state_tensor)
                     elif self.NN_MODULE_TYPE =='deepMLP':
-                        probs = self.net.predict_proba(curent_state_tensor)
+                        probs = self.net.predict_proba(current_state_tensor)
                     sampled_action = np.random.choice(np.arange(self.total_actions),
                                                       p=probs.reshape(self.total_actions, ))
                 # use the probabilities to pick an action
@@ -229,15 +235,20 @@ class DeepCEM:
                 decoded_vel,decoded_delta = self.decode_action_idx(sampled_action)
                 # print(decoded_vel,decoded_delta)
 
-                new_state, reward, complete_status = self.step_nn_model(decoded_vel,decoded_delta)
+                new_state, reward, complete_status = self.step_nn_model(current_state_tensor,decoded_vel,decoded_delta)
                 print(decoded_vel,decoded_delta,reward)
 
                 # print(reward,new_state)
                 # record sessions to train later on
-                states.append(current_state)
-                actions.append(sampled_action)
+                
                 total_reward += reward -time_penalty
                 current_state = new_state
+                current_state_tensor = torch.reshape(current_state,(1,1,150,150))
+                filename = "./img"+str(t)+".png"
+                img_data = current_state_tensor.data.cpu().numpy()
+                plt.imsave(filename,img_data.reshape(150,150))
+                states.append(current_state_tensor.data.cpu().numpy())
+                actions.append(sampled_action.data)
                 if complete_status:
                     break
             except KeyboardInterrupt:
@@ -245,9 +256,17 @@ class DeepCEM:
 
         return states, actions, total_reward
 
-    def step_nn_model(self,decoded_vel, decoded_delta):
+    def step_nn_model(self,input_image,decoded_vel,decoded_delta):
         '''run nn model to get next obesevation and reward'''
-        return 0,0,0
+        with torch.no_grad(): 
+            self.env_model.obs_minus_2 = input_image
+            self.env_model.obs_minus_1 = input_image
+            self.env_model.obs_minus_0 = input_image
+            self.env_model.one_hot_action_0 = Training_Regime.action_one_hot_encoding(decoded_delta, decoded_vel)
+            self.env_model.one_hot_action_1 = Training_Regime.action_one_hot_encoding(decoded_delta, decoded_vel)
+            self.env_model.one_hot_action_2 = Training_Regime.action_one_hot_encoding(decoded_delta, decoded_vel)
+            r_0,ob_0,r_1,ob_1,r_2,ob_2 = self.env_model.forward()
+        return ob_1,r_1,0
 
     def select_elites(self,states_batch, actions_batch, rewards_batch, percentile=50):
         """
@@ -303,12 +322,12 @@ class DeepCEM:
         self.log.append([mean_reward, threshold])
         # clear_output(True)
         print("mean reward = ",mean_reward, " threshold=",threshold)
-        plt.figure(figsize=[8, 4])
-        plt.subplot(1, 2, 1)
-        plt.plot(list(zip(*self.log))[0], label='Mean rewards')
-        plt.plot(list(zip(*self.log))[1], label='Reward thresholds')
-        plt.legend()
-        plt.grid()
+        # plt.figure(figsize=[8, 4])
+        # plt.subplot(1, 2, 1)
+        # plt.plot(list(zip(*self.log))[0], label='Mean rewards')
+        # plt.plot(list(zip(*self.log))[1], label='Reward thresholds')
+        # plt.legend()
+        # plt.grid()
 
         # plt.subplot(1, 2, 2)
         # plt.hist(rewards_batch, range=reward_range)
@@ -316,13 +335,14 @@ class DeepCEM:
         #            [0], [100], label="percentile", color='red')
         # plt.legend()
         # plt.grid()
-        plt.show()
+        # plt.show()
 
 if __name__ == "__main__":
     torch.cuda.empty_cache()
     print("Total cuda-supporting devices count is ", torch.cuda.device_count())
     device = torch.device('cuda:1')
+    torch.cuda.set_device(device)
     print("Current cuda device is ", device)
-    deep_cem = DeepCEM('cpu')
+    deep_cem = DeepCEM(device)
 
 
