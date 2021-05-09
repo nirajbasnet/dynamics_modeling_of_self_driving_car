@@ -257,7 +257,7 @@ class DeepCEM:
         for i in range(self.N_GENERATIONS):
             # generate new sessions
             print("Generation ",i)
-            sessions = [ self.generate_session(self.N_TSTEPS_HORIZON) for i in range(self.N_SESSIONS) ]
+            sessions = [ self.generate_session(self.N_TSTEPS_HORIZON) for gen in range(self.N_SESSIONS) ]
             if self.FIRST_RUN:
                 self.FIRST_RUN = False
 
