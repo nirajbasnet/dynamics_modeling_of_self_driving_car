@@ -99,7 +99,7 @@ class DeepCEM:
             max_epochs=30,
             lr=self.lrate,
             device=self.device,
-            optimizer=torch.optim.SGD,
+            optimizer=torch.optim.Adam,
         )
 
         self.reset_state_sim = plt.imread("../Data/img2.png")
@@ -108,8 +108,8 @@ class DeepCEM:
 
         #Training related variables
         self.NN_MODULE_TYPE = 'deepCNN'   #'deepMLP' and 'deepCNN
-        self.N_SESSIONS = 150
-        self.N_TSTEPS_HORIZON = 50
+        self.N_SESSIONS = 100
+        self.N_TSTEPS_HORIZON = 60
         self.ELITE_PERCENTILE = 70
         self.N_GENERATIONS = 100
         self.log=[]
@@ -290,7 +290,7 @@ class DeepCEM:
         for i in range(self.N_GENERATIONS):
             # generate new sessions
             print("Generation ",i)
-            sessions = [ self.generate_session(self.N_TSTEPS_HORIZON) for i in range(self.N_SESSIONS) ]
+            sessions = [ self.generate_session(self.N_TSTEPS_HORIZON) for gen in range(self.N_SESSIONS) ]
             if self.FIRST_RUN:
                 self.FIRST_RUN = False
 
